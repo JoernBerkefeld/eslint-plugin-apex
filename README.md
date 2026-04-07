@@ -1,6 +1,10 @@
 # eslint-plugin-apex
 
-ESLint plugin for [Salesforce Apex](https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/) — ports **65 active PMD Apex rules** into the ESLint ecosystem, backed by the ANTLR4-based [`@apexdevtools/apex-parser`](https://github.com/apex-dev-tools/apex-parser).
+ESLint plugin for [Salesforce Apex](https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/) — inspired by [apex-pmd](https://github.com/pmd/pmd/tree/main/pmd-apex), this plugin ports **65 active PMD Apex rules** into the ESLint ecosystem so that teams working with Salesforce can use a **single linting tool for both Apex and Lightning Web Components (LWC)** side by side.
+
+If you already use [eslint-plugin-lwc](https://github.com/salesforce/eslint-plugin-lwc) for your LWC code, adding `eslint-plugin-apex` brings your Apex codebase into the same workflow — one `eslint.config.js`, one `npm run lint` command, one CI step.
+
+The plugin is backed by the ANTLR4-based [`@apexdevtools/apex-parser`](https://github.com/apex-dev-tools/apex-parser) for accurate, whitespace-aware parsing rather than regex heuristics.
 
 > **Status:** Early release. Parser coverage is solid for classes and triggers; advanced patterns (anonymous Apex, complex generics) are progressively improved.
 
