@@ -322,7 +322,7 @@
   </svg>
   <div>
     <h1>eslint-plugin-apex</h1>
-    <p>PMD Apex → ESLint rule converter &amp; reference</p>
+    <p>Apex linting for ESLint — inspired by apex-pmd, built for LWC + Apex teams</p>
   </div>
 </header>
 
@@ -467,6 +467,16 @@ export default [
         Switch to the <strong>PMD Converter</strong> tab to paste a PMD Apex rule XML
         and get an ESLint flat-config snippet and a rule implementation skeleton.
         The converter runs entirely in the browser — no data is sent anywhere.
+      </p>
+
+      <h2 style="margin-top:24px">Background</h2>
+      <p>
+        This plugin is inspired by <a href="https://github.com/pmd/pmd/tree/main/pmd-apex" target="_blank">apex-pmd</a>
+        and aims to port its rules into the ESLint ecosystem so teams can use a
+        <strong>single linting tool for both Apex and Lightning Web Components (LWC)</strong>.
+        If you already use <a href="https://github.com/salesforce/eslint-plugin-lwc" target="_blank">eslint-plugin-lwc</a>,
+        adding <code>eslint-plugin-apex</code> brings your Apex codebase into the same workflow —
+        one <code>eslint.config.js</code>, one <code>npm run lint</code>, one CI step.
       </p>
 
       <h2 style="margin-top:24px">Links</h2>
