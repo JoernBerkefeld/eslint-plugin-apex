@@ -17,7 +17,7 @@ export default {
         },
         messages: {
             debugStatement:
-                "System.debug() is called. Remove debug statements from production code or gate them with custom labels.",
+                'System.debug() is called. Remove debug statements from production code or gate them with custom labels.',
         },
         schema: [],
     },

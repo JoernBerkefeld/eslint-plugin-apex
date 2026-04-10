@@ -12,14 +12,22 @@
 
 import { ApexParserFactory, ApexErrorListener } from '@apexdevtools/apex-parser';
 import { VISITOR_KEYS } from './node-types.js';
-import { buildFromCompilationUnit, buildFromTriggerUnit, buildFromAnonymousUnit } from './ast-builder.js';
+import {
+    buildFromCompilationUnit,
+    buildFromTriggerUnit,
+    buildFromAnonymousUnit,
+} from './ast-builder.js';
 
 // ── Parse entry-point detection ────────────────────────────────────────────
 
 function detectEntryPoint(options) {
     const filename = (options && options.filePath) || '';
-    if (filename.endsWith('.trigger')) return 'trigger';
-    if (filename.endsWith('.apex') || filename.endsWith('.anon')) return 'anonymous';
+    if (filename.endsWith('.trigger')) {
+        return 'trigger';
+    }
+    if (filename.endsWith('.apex') || filename.endsWith('.anon')) {
+        return 'anonymous';
+    }
     return 'compilation'; // default: .cls
 }
 
@@ -42,6 +50,9 @@ class CollectingErrorListener extends ApexErrorListener {
  * parseForESLint(code, options) — primary ESLint parser entry point.
  *
  * Returns { ast, visitorKeys, services, scopeManager }.
+ *
+ * @param code
+ * @param options
  */
 export function parseForESLint(code, options) {
     const errorListener = new CollectingErrorListener();
@@ -66,7 +77,7 @@ export function parseForESLint(code, options) {
             tree = parser.compilationUnit();
             result = buildFromCompilationUnit(tree, code);
         }
-    } catch (err) {
+    } catch (ex) {
         // If the parser throws, produce a minimal Program node with error info
         result = {
             ast: {
@@ -79,7 +90,7 @@ export function parseForESLint(code, options) {
                 },
                 tokens: [],
                 comments: [],
-                errors: [{ message: err.message }],
+                errors: [{ message: ex.message }],
             },
         };
     }
@@ -97,6 +108,9 @@ export function parseForESLint(code, options) {
 /**
  * parse(code, options) — compatibility shim for tools that use the simpler
  * one-argument parse() signature.
+ *
+ * @param code
+ * @param options
  */
 export function parse(code, options) {
     return parseForESLint(code, options).ast;

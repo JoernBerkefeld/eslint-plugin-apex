@@ -17,7 +17,7 @@ export default {
         },
         messages: {
             soqlInjection:
-                "Dynamic SOQL query built via string concatenation may be vulnerable to SOQL injection. Use bind variables (:variable) or String.escapeSingleQuotes().",
+                'Dynamic SOQL query built via string concatenation may be vulnerable to SOQL injection. Use bind variables (:variable) or String.escapeSingleQuotes().',
         },
         schema: [],
     },
@@ -26,16 +26,24 @@ export default {
         return {
             ApexMethodCallExpression(node) {
                 const callee = (node.rawCallee || '').toLowerCase();
-                if (callee !== 'database.query' && callee !== 'query') return;
+                if (callee !== 'database.query' && callee !== 'query') {
+                    return;
+                }
 
                 // If the argument is not a simple string literal, flag it
                 const args = node.arguments || [];
-                if (args.length === 0) return;
+                if (args.length === 0) {
+                    return;
+                }
                 const firstArg = args[0];
-                if (!firstArg) return;
+                if (!firstArg) {
+                    return;
+                }
 
                 // Literal string is OK (static query)
-                if (firstArg.type === 'ApexLiteralExpression') return;
+                if (firstArg.type === 'ApexLiteralExpression') {
+                    return;
+                }
                 // escapeSingleQuotes is OK
                 if (
                     firstArg.type === 'ApexMethodCallExpression' &&

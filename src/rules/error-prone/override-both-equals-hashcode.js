@@ -34,9 +34,17 @@ export default {
                 const hasHashCode = methods.includes('hashcode');
 
                 if (hasEquals && !hasHashCode) {
-                    context.report({ node, messageId: 'missingHashCode', data: { name: node.id.name } });
+                    context.report({
+                        node,
+                        messageId: 'missingHashCode',
+                        data: { name: node.id.name },
+                    });
                 } else if (hasHashCode && !hasEquals) {
-                    context.report({ node, messageId: 'missingEquals', data: { name: node.id.name } });
+                    context.report({
+                        node,
+                        messageId: 'missingEquals',
+                        data: { name: node.id.name },
+                    });
                 }
             },
         };

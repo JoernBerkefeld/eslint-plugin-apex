@@ -1,350 +1,478 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eslint-plugin-apex — PMD Rule Converter</title>
-  <style>
-    :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --border: #2e3147;
-      --accent: #6c8ef5;
-      --accent-hover: #8aa4f7;
-      --text: #e2e4f0;
-      --text-muted: #8b8fa8;
-      --success: #4caf82;
-      --error: #f56565;
-      --warning: #f5a623;
-      --code-bg: #12141e;
-      --radius: 8px;
-    }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>eslint-plugin-apex — PMD Rule Converter</title>
+        <style>
+            :root {
+                --bg: #0f1117;
+                --surface: #1a1d27;
+                --border: #2e3147;
+                --accent: #6c8ef5;
+                --accent-hover: #8aa4f7;
+                --text: #e2e4f0;
+                --text-muted: #8b8fa8;
+                --success: #4caf82;
+                --error: #f56565;
+                --warning: #f5a623;
+                --code-bg: #12141e;
+                --radius: 8px;
+            }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                min-height: 100vh;
+            }
 
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 32px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+            header {
+                background: var(--surface);
+                border-bottom: 1px solid var(--border);
+                padding: 20px 32px;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
 
-    header svg { flex-shrink: 0; }
+            header svg {
+                flex-shrink: 0;
+            }
 
-    header h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--text);
-    }
+            header h1 {
+                font-size: 1.4rem;
+                font-weight: 700;
+                color: var(--text);
+            }
 
-    header p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+            header p {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+                margin-top: 2px;
+            }
 
-    nav {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      display: flex;
-      gap: 0;
-    }
+            nav {
+                background: var(--surface);
+                border-bottom: 1px solid var(--border);
+                padding: 0 32px;
+                display: flex;
+                gap: 0;
+            }
 
-    nav button {
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 12px 16px;
-      transition: color 0.15s, border-color 0.15s;
-    }
+            nav button {
+                background: none;
+                border: none;
+                border-bottom: 2px solid transparent;
+                color: var(--text-muted);
+                cursor: pointer;
+                font-size: 0.9rem;
+                padding: 12px 16px;
+                transition:
+                    color 0.15s,
+                    border-color 0.15s;
+            }
 
-    nav button.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
+            nav button.active {
+                color: var(--accent);
+                border-bottom-color: var(--accent);
+            }
 
-    nav button:hover:not(.active) { color: var(--text); }
+            nav button:hover:not(.active) {
+                color: var(--text);
+            }
 
-    main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+            main {
+                padding: 32px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
 
-    /* Tab panels */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+            /* Tab panels */
+            .tab-panel {
+                display: none;
+            }
+            .tab-panel.active {
+                display: block;
+            }
 
-    /* ── Converter tab ── */
-    .converter-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
+            /* ── Converter tab ── */
+            .converter-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 24px;
+            }
 
-    @media (max-width: 800px) {
-      .converter-grid { grid-template-columns: 1fr; }
-    }
+            @media (max-width: 800px) {
+                .converter-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
 
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
+            .panel {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+            }
 
-    .panel-header {
-      background: var(--code-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+            .panel-header {
+                background: var(--code-bg);
+                border-bottom: 1px solid var(--border);
+                padding: 10px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
 
-    .panel-header span {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+            .panel-header span {
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
 
-    .panel-header .badge {
-      background: var(--accent);
-      color: #fff;
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 600;
-    }
+            .panel-header .badge {
+                background: var(--accent);
+                color: #fff;
+                font-size: 0.7rem;
+                padding: 2px 8px;
+                border-radius: 999px;
+                font-weight: 600;
+            }
 
-    textarea {
-      width: 100%;
-      height: 420px;
-      background: var(--code-bg);
-      color: var(--text);
-      border: none;
-      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
-      font-size: 0.82rem;
-      line-height: 1.6;
-      padding: 16px;
-      resize: vertical;
-      outline: none;
-    }
+            textarea {
+                width: 100%;
+                height: 420px;
+                background: var(--code-bg);
+                color: var(--text);
+                border: none;
+                font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+                font-size: 0.82rem;
+                line-height: 1.6;
+                padding: 16px;
+                resize: vertical;
+                outline: none;
+            }
 
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      margin: 20px 0;
-      flex-wrap: wrap;
-    }
+            .btn-row {
+                display: flex;
+                gap: 12px;
+                margin: 20px 0;
+                flex-wrap: wrap;
+            }
 
-    button.btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      padding: 10px 20px;
-      transition: background 0.15s;
-    }
+            button.btn {
+                background: var(--accent);
+                color: #fff;
+                border: none;
+                border-radius: var(--radius);
+                cursor: pointer;
+                font-size: 0.9rem;
+                font-weight: 600;
+                padding: 10px 20px;
+                transition: background 0.15s;
+            }
 
-    button.btn:hover { background: var(--accent-hover); }
+            button.btn:hover {
+                background: var(--accent-hover);
+            }
 
-    button.btn.secondary {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
+            button.btn.secondary {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                color: var(--text);
+            }
 
-    button.btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+            button.btn.secondary:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
 
-    .status {
-      font-size: 0.85rem;
-      padding: 8px 14px;
-      border-radius: var(--radius);
-      margin-bottom: 16px;
-      display: none;
-    }
+            .status {
+                font-size: 0.85rem;
+                padding: 8px 14px;
+                border-radius: var(--radius);
+                margin-bottom: 16px;
+                display: none;
+            }
 
-    .status.success { background: #1a2e24; border: 1px solid var(--success); color: var(--success); display: flex; align-items: center; gap: 8px; }
-    .status.error   { background: #2e1a1a; border: 1px solid var(--error);   color: var(--error);   display: flex; align-items: center; gap: 8px; }
-    .status.info    { background: #1a2233; border: 1px solid var(--accent);  color: var(--accent);  display: flex; align-items: center; gap: 8px; }
+            .status.success {
+                background: #1a2e24;
+                border: 1px solid var(--success);
+                color: var(--success);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .status.error {
+                background: #2e1a1a;
+                border: 1px solid var(--error);
+                color: var(--error);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .status.info {
+                background: #1a2233;
+                border: 1px solid var(--accent);
+                color: var(--accent);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
 
-    /* ── Rules table tab ── */
-    .search-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
+            /* ── Rules table tab ── */
+            .search-row {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
 
-    .search-row input, .search-row select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-size: 0.9rem;
-      padding: 8px 14px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
+            .search-row input,
+            .search-row select {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                color: var(--text);
+                font-size: 0.9rem;
+                padding: 8px 14px;
+                outline: none;
+                transition: border-color 0.15s;
+            }
 
-    .search-row input { flex: 1; min-width: 200px; }
-    .search-row input:focus, .search-row select:focus { border-color: var(--accent); }
+            .search-row input {
+                flex: 1;
+                min-width: 200px;
+            }
+            .search-row input:focus,
+            .search-row select:focus {
+                border-color: var(--accent);
+            }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.85rem;
+            }
 
-    th {
-      background: var(--code-bg);
-      border-bottom: 2px solid var(--border);
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      padding: 10px 14px;
-      text-align: left;
-      text-transform: uppercase;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-    }
+            th {
+                background: var(--code-bg);
+                border-bottom: 2px solid var(--border);
+                color: var(--text-muted);
+                font-size: 0.75rem;
+                font-weight: 600;
+                letter-spacing: 0.05em;
+                padding: 10px 14px;
+                text-align: left;
+                text-transform: uppercase;
+                cursor: pointer;
+                user-select: none;
+                white-space: nowrap;
+            }
 
-    th:hover { color: var(--text); }
+            th:hover {
+                color: var(--text);
+            }
 
-    tr:hover td { background: #ffffff08; }
+            tr:hover td {
+                background: #ffffff08;
+            }
 
-    td {
-      border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
-      vertical-align: middle;
-    }
+            td {
+                border-bottom: 1px solid var(--border);
+                padding: 10px 14px;
+                vertical-align: middle;
+            }
 
-    .badge-cat {
-      border-radius: 999px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 2px 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
+            .badge-cat {
+                border-radius: 999px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                padding: 2px 9px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
 
-    .cat-best-practices { background: #1e3a5f; color: #7eb8f7; }
-    .cat-code-style     { background: #3a2a5f; color: #c5a3f5; }
-    .cat-design         { background: #2a3a1e; color: #8fd67e; }
-    .cat-documentation  { background: #3a3a1e; color: #e8d66e; }
-    .cat-error-prone    { background: #3a1e1e; color: #f5907e; }
-    .cat-performance    { background: #3a2a1e; color: #f5c27e; }
-    .cat-security       { background: #3a1e2a; color: #f57eb8; }
+            .cat-best-practices {
+                background: #1e3a5f;
+                color: #7eb8f7;
+            }
+            .cat-code-style {
+                background: #3a2a5f;
+                color: #c5a3f5;
+            }
+            .cat-design {
+                background: #2a3a1e;
+                color: #8fd67e;
+            }
+            .cat-documentation {
+                background: #3a3a1e;
+                color: #e8d66e;
+            }
+            .cat-error-prone {
+                background: #3a1e1e;
+                color: #f5907e;
+            }
+            .cat-performance {
+                background: #3a2a1e;
+                color: #f5c27e;
+            }
+            .cat-security {
+                background: #3a1e2a;
+                color: #f57eb8;
+            }
 
-    .badge-type {
-      border-radius: var(--radius);
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 2px 8px;
-    }
+            .badge-type {
+                border-radius: var(--radius);
+                font-size: 0.7rem;
+                font-weight: 600;
+                padding: 2px 8px;
+            }
 
-    .type-problem    { background: #2e1a1a; color: var(--error); }
-    .type-suggestion { background: #1a2233; color: var(--accent); }
-    .type-layout     { background: #1a1a2e; color: #a0a0f0; }
+            .type-problem {
+                background: #2e1a1a;
+                color: var(--error);
+            }
+            .type-suggestion {
+                background: #1a2233;
+                color: var(--accent);
+            }
+            .type-layout {
+                background: #1a1a2e;
+                color: #a0a0f0;
+            }
 
-    code {
-      background: var(--code-bg);
-      border-radius: 4px;
-      color: var(--accent-hover);
-      font-family: 'Fira Code', Consolas, monospace;
-      font-size: 0.78rem;
-      padding: 2px 6px;
-    }
+            code {
+                background: var(--code-bg);
+                border-radius: 4px;
+                color: var(--accent-hover);
+                font-family: 'Fira Code', Consolas, monospace;
+                font-size: 0.78rem;
+                padding: 2px 6px;
+            }
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+            a {
+                color: var(--accent);
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
 
-    /* ── Usage tab ── */
-    .usage-section { max-width: 760px; }
-    .usage-section h2 { font-size: 1.1rem; margin-bottom: 12px; }
-    .usage-section h3 { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; margin-top: 20px; }
-    .usage-section p  { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 12px; }
+            /* ── Usage tab ── */
+            .usage-section {
+                max-width: 760px;
+            }
+            .usage-section h2 {
+                font-size: 1.1rem;
+                margin-bottom: 12px;
+            }
+            .usage-section h3 {
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+                margin-top: 20px;
+            }
+            .usage-section p {
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                line-height: 1.7;
+                margin-bottom: 12px;
+            }
 
-    pre {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-family: 'Fira Code', Consolas, monospace;
-      font-size: 0.82rem;
-      line-height: 1.6;
-      overflow-x: auto;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
+            pre {
+                background: var(--code-bg);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                color: var(--text);
+                font-family: 'Fira Code', Consolas, monospace;
+                font-size: 0.82rem;
+                line-height: 1.6;
+                overflow-x: auto;
+                padding: 16px;
+                margin-bottom: 16px;
+            }
 
-    .copy-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text-muted);
-      cursor: pointer;
-      float: right;
-      font-size: 0.75rem;
-      padding: 3px 10px;
-      margin-left: 8px;
-      transition: all 0.15s;
-    }
-    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+            .copy-btn {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                color: var(--text-muted);
+                cursor: pointer;
+                float: right;
+                font-size: 0.75rem;
+                padding: 3px 10px;
+                margin-left: 8px;
+                transition: all 0.15s;
+            }
+            .copy-btn:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
 
-    .no-results { color: var(--text-muted); padding: 24px; text-align: center; }
-  </style>
-</head>
-<body>
+            .no-results {
+                color: var(--text-muted);
+                padding: 24px;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <svg
+                width="36"
+                height="36"
+                viewBox="0 0 36 36"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <rect width="36" height="36" rx="8" fill="#1a1d27" />
+                <path
+                    d="M8 26 L14 10 L18 20 L22 10 L28 26"
+                    stroke="#6c8ef5"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    fill="none"
+                />
+                <circle cx="18" cy="20" r="2.5" fill="#6c8ef5" />
+            </svg>
+            <div>
+                <h1>eslint-plugin-apex</h1>
+                <p>Apex linting for ESLint — inspired by apex-pmd, built for LWC + Apex teams</p>
+            </div>
+        </header>
 
-<header>
-  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="36" height="36" rx="8" fill="#1a1d27"/>
-    <path d="M8 26 L14 10 L18 20 L22 10 L28 26" stroke="#6c8ef5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <circle cx="18" cy="20" r="2.5" fill="#6c8ef5"/>
-  </svg>
-  <div>
-    <h1>eslint-plugin-apex</h1>
-    <p>Apex linting for ESLint — inspired by apex-pmd, built for LWC + Apex teams</p>
-  </div>
-</header>
+        <nav>
+            <button class="active" onclick="showTab('converter', this)">PMD Converter</button>
+            <button onclick="showTab('rules', this)">Rule Reference</button>
+            <button onclick="showTab('usage', this)">Usage</button>
+        </nav>
 
-<nav>
-  <button class="active" onclick="showTab('converter', this)">PMD Converter</button>
-  <button onclick="showTab('rules', this)">Rule Reference</button>
-  <button onclick="showTab('usage', this)">Usage</button>
-</nav>
+        <main>
+            <!-- ── Converter ─────────────────────────────────────────────────────── -->
+            <div id="tab-converter" class="tab-panel active">
+                <div id="status" class="status"></div>
 
-<main>
-
-  <!-- ── Converter ─────────────────────────────────────────────────────── -->
-  <div id="tab-converter" class="tab-panel active">
-    <div id="status" class="status"></div>
-
-    <div class="converter-grid">
-      <div class="panel">
-        <div class="panel-header">
-          <span>PMD Apex Rule XML</span>
-          <span class="badge">Input</span>
-        </div>
-        <textarea id="input" spellcheck="false" placeholder='Paste a PMD rule XML here, e.g.:
+                <div class="converter-grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span>PMD Apex Rule XML</span>
+                            <span class="badge">Input</span>
+                        </div>
+                        <textarea
+                            id="input"
+                            spellcheck="false"
+                            placeholder='Paste a PMD rule XML here, e.g.:
 
 <rule name="AvoidDebugStatements"
       since="6.12.0"
@@ -362,66 +490,85 @@
       }
   }
   ]]></example>
-</rule>'></textarea>
-      </div>
+</rule>'
+                        ></textarea>
+                    </div>
 
-      <div class="panel">
-        <div class="panel-header">
-          <span>ESLint Config Snippet</span>
-          <span class="badge">Output</span>
-        </div>
-        <textarea id="output" spellcheck="false" readonly placeholder="// Converted output will appear here …"></textarea>
-      </div>
-    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span>ESLint Config Snippet</span>
+                            <span class="badge">Output</span>
+                        </div>
+                        <textarea
+                            id="output"
+                            spellcheck="false"
+                            readonly
+                            placeholder="// Converted output will appear here …"
+                        ></textarea>
+                    </div>
+                </div>
 
-    <div class="btn-row">
-      <button class="btn" onclick="convert()">Convert</button>
-      <button class="btn secondary" onclick="copyOutput()">Copy Output</button>
-      <button class="btn secondary" onclick="clearAll()">Clear</button>
-      <button class="btn secondary" onclick="loadExample()">Load Example</button>
-    </div>
+                <div class="btn-row">
+                    <button class="btn" onclick="convert()">Convert</button>
+                    <button class="btn secondary" onclick="copyOutput()">Copy Output</button>
+                    <button class="btn secondary" onclick="clearAll()">Clear</button>
+                    <button class="btn secondary" onclick="loadExample()">Load Example</button>
+                </div>
 
-    <div class="panel">
-      <div class="panel-header">
-        <span>Rule Skeleton (src/rules/…/rule-name.js)</span>
-      </div>
-      <textarea id="skeleton" spellcheck="false" readonly style="height:320px;" placeholder="// Rule implementation skeleton will appear here …"></textarea>
-    </div>
-  </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>Rule Skeleton (src/rules/…/rule-name.js)</span>
+                    </div>
+                    <textarea
+                        id="skeleton"
+                        spellcheck="false"
+                        readonly
+                        style="height: 320px"
+                        placeholder="// Rule implementation skeleton will appear here …"
+                    ></textarea>
+                </div>
+            </div>
 
-  <!-- ── Rule Reference ────────────────────────────────────────────────── -->
-  <div id="tab-rules" class="tab-panel">
-    <div class="search-row">
-      <input id="search" type="text" placeholder="Search rules…" oninput="filterRules()" />
-      <select id="filter-cat" onchange="filterRules()">
-        <option value="">All categories</option>
-        <option value="best-practices">Best Practices</option>
-        <option value="code-style">Code Style</option>
-        <option value="design">Design</option>
-        <option value="documentation">Documentation</option>
-        <option value="error-prone">Error Prone</option>
-        <option value="performance">Performance</option>
-        <option value="security">Security</option>
-      </select>
-      <select id="filter-type" onchange="filterRules()">
-        <option value="">All types</option>
-        <option value="problem">problem</option>
-        <option value="suggestion">suggestion</option>
-        <option value="layout">layout</option>
-      </select>
-    </div>
-    <div id="rules-table-wrap"></div>
-  </div>
+            <!-- ── Rule Reference ────────────────────────────────────────────────── -->
+            <div id="tab-rules" class="tab-panel">
+                <div class="search-row">
+                    <input
+                        id="search"
+                        type="text"
+                        placeholder="Search rules…"
+                        oninput="filterRules()"
+                    />
+                    <select id="filter-cat" onchange="filterRules()">
+                        <option value="">All categories</option>
+                        <option value="best-practices">Best Practices</option>
+                        <option value="code-style">Code Style</option>
+                        <option value="design">Design</option>
+                        <option value="documentation">Documentation</option>
+                        <option value="error-prone">Error Prone</option>
+                        <option value="performance">Performance</option>
+                        <option value="security">Security</option>
+                    </select>
+                    <select id="filter-type" onchange="filterRules()">
+                        <option value="">All types</option>
+                        <option value="problem">problem</option>
+                        <option value="suggestion">suggestion</option>
+                        <option value="layout">layout</option>
+                    </select>
+                </div>
+                <div id="rules-table-wrap"></div>
+            </div>
 
-  <!-- ── Usage ─────────────────────────────────────────────────────────── -->
-  <div id="tab-usage" class="tab-panel">
-    <div class="usage-section">
-      <h2>Installation</h2>
-      <pre><code>npm install --save-dev eslint-plugin-apex</code></pre>
+            <!-- ── Usage ─────────────────────────────────────────────────────────── -->
+            <div id="tab-usage" class="tab-panel">
+                <div class="usage-section">
+                    <h2>Installation</h2>
+                    <pre><code>npm install --save-dev eslint-plugin-apex</code></pre>
 
-      <h2 style="margin-top:24px">Quick Start (flat config)</h2>
-      <p>Add to your <code>eslint.config.js</code>:</p>
-      <pre id="pre-recommended"><button class="copy-btn" onclick="copyPre('pre-recommended')">copy</button>import apex from 'eslint-plugin-apex';
+                    <h2 style="margin-top: 24px">Quick Start (flat config)</h2>
+                    <p>Add to your <code>eslint.config.js</code>:</p>
+                    <pre
+                        id="pre-recommended"
+                    ><button class="copy-btn" onclick="copyPre('pre-recommended')">copy</button>import apex from 'eslint-plugin-apex';
 
 export default [
   apex.configs.recommended,
@@ -430,24 +577,41 @@ export default [
   // apex.configs.performance,
 ];</pre>
 
-      <h2 style="margin-top:24px">Available Configs</h2>
-      <table style="max-width:600px">
-        <thead>
-          <tr>
-            <th>Config</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><code>apex.configs.recommended</code></td><td>Recommended rules — errors for problems, warnings for suggestions</td></tr>
-          <tr><td><code>apex.configs.strict</code></td><td>All rules at <code>error</code> severity</td></tr>
-          <tr><td><code>apex.configs.security</code></td><td>Security rules only at <code>error</code></td></tr>
-          <tr><td><code>apex.configs.performance</code></td><td>Performance rules only at <code>error</code></td></tr>
-        </tbody>
-      </table>
+                    <h2 style="margin-top: 24px">Available Configs</h2>
+                    <table style="max-width: 600px">
+                        <thead>
+                            <tr>
+                                <th>Config</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>apex.configs.recommended</code></td>
+                                <td>
+                                    Recommended rules — errors for problems, warnings for
+                                    suggestions
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>apex.configs.strict</code></td>
+                                <td>All rules at <code>error</code> severity</td>
+                            </tr>
+                            <tr>
+                                <td><code>apex.configs.security</code></td>
+                                <td>Security rules only at <code>error</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>apex.configs.performance</code></td>
+                                <td>Performance rules only at <code>error</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-      <h2 style="margin-top:24px">Manual Rule Configuration</h2>
-      <pre id="pre-manual"><button class="copy-btn" onclick="copyPre('pre-manual')">copy</button>import apex from 'eslint-plugin-apex';
+                    <h2 style="margin-top: 24px">Manual Rule Configuration</h2>
+                    <pre
+                        id="pre-manual"
+                    ><button class="copy-btn" onclick="copyPre('pre-manual')">copy</button>import apex from 'eslint-plugin-apex';
 
 export default [
   {
@@ -462,454 +626,803 @@ export default [
   },
 ];</pre>
 
-      <h2 style="margin-top:24px">PMD Converter</h2>
-      <p>
-        Switch to the <strong>PMD Converter</strong> tab to paste a PMD Apex rule XML
-        and get an ESLint flat-config snippet and a rule implementation skeleton.
-        The converter runs entirely in the browser — no data is sent anywhere.
-      </p>
+                    <h2 style="margin-top: 24px">PMD Converter</h2>
+                    <p>
+                        Switch to the <strong>PMD Converter</strong> tab to paste a PMD Apex rule
+                        XML and get an ESLint flat-config snippet and a rule implementation
+                        skeleton. The converter runs entirely in the browser — no data is sent
+                        anywhere.
+                    </p>
 
-      <h2 style="margin-top:24px">Background</h2>
-      <p>
-        This plugin is inspired by <a href="https://github.com/pmd/pmd/tree/main/pmd-apex" target="_blank">apex-pmd</a>
-        and aims to port its rules into the ESLint ecosystem so teams can use a
-        <strong>single linting tool for both Apex and Lightning Web Components (LWC)</strong>.
-        If you already use <a href="https://github.com/salesforce/eslint-plugin-lwc" target="_blank">eslint-plugin-lwc</a>,
-        adding <code>eslint-plugin-apex</code> brings your Apex codebase into the same workflow —
-        one <code>eslint.config.js</code>, one <code>npm run lint</code>, one CI step.
-      </p>
+                    <h2 style="margin-top: 24px">Background</h2>
+                    <p>
+                        This plugin is inspired by
+                        <a href="https://github.com/pmd/pmd/tree/main/pmd-apex" target="_blank"
+                            >apex-pmd</a
+                        >
+                        and aims to port its rules into the ESLint ecosystem so teams can use a
+                        <strong
+                            >single linting tool for both Apex and Lightning Web Components
+                            (LWC)</strong
+                        >. If you already use
+                        <a href="https://github.com/salesforce/eslint-plugin-lwc" target="_blank"
+                            >eslint-plugin-lwc</a
+                        >, adding <code>eslint-plugin-apex</code> brings your Apex codebase into the
+                        same workflow — one <code>eslint.config.js</code>, one
+                        <code>npm run lint</code>, one CI step.
+                    </p>
 
-      <h2 style="margin-top:24px">Links</h2>
-      <ul style="list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-        <li><a href="https://www.npmjs.com/package/eslint-plugin-apex" target="_blank">npm package</a></li>
-        <li><a href="https://github.com/JoernBerkefeld/eslint-plugin-apex" target="_blank">GitHub repository</a></li>
-        <li><a href="https://docs.pmd-code.org/latest/pmd_rules_apex.html" target="_blank">PMD Apex rule reference</a></li>
-        <li><a href="https://eslint.org/docs/latest/use/configure/configuration-files" target="_blank">ESLint flat config docs</a></li>
-      </ul>
-    </div>
-  </div>
+                    <h2 style="margin-top: 24px">Links</h2>
+                    <ul
+                        style="
+                            list-style: none;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 8px;
+                            margin-top: 8px;
+                        "
+                    >
+                        <li>
+                            <a
+                                href="https://www.npmjs.com/package/eslint-plugin-apex"
+                                target="_blank"
+                                >npm package</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/JoernBerkefeld/eslint-plugin-apex"
+                                target="_blank"
+                                >GitHub repository</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="https://docs.pmd-code.org/latest/pmd_rules_apex.html"
+                                target="_blank"
+                                >PMD Apex rule reference</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="https://eslint.org/docs/latest/use/configure/configuration-files"
+                                target="_blank"
+                                >ESLint flat config docs</a
+                            >
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
 
-</main>
+        <script>
+            // ── Tab navigation ─────────────────────────────────────────────────────────
 
-<script>
-// ── Tab navigation ─────────────────────────────────────────────────────────
+            function showTab(id, btn) {
+                document
+                    .querySelectorAll('.tab-panel')
+                    .forEach((p) => p.classList.remove('active'));
+                document
+                    .querySelectorAll('nav button')
+                    .forEach((b) => b.classList.remove('active'));
+                document.getElementById('tab-' + id).classList.add('active');
+                btn.classList.add('active');
+                if (id === 'rules') renderRulesTable();
+            }
 
-function showTab(id, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  btn.classList.add('active');
-  if (id === 'rules') renderRulesTable();
-}
+            // ── Rule catalogue (generated from src/index.js metadata) ─────────────────
 
-// ── Rule catalogue (generated from src/index.js metadata) ─────────────────
+            const RULES = [
+                // Best Practices
+                {
+                    id: 'best-test-has-asserts',
+                    category: 'best-practices',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexUnitTestClassShouldHaveAsserts',
+                    desc: 'Unit test methods must contain at least one System.assert().',
+                },
+                {
+                    id: 'best-test-no-see-all-data',
+                    category: 'best-practices',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexUnitTestShouldNotUseSeeAllDataTrue',
+                    desc: 'Test classes should not use @isTest(SeeAllData=true).',
+                },
+                {
+                    id: 'best-test-has-run-as',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'ApexUnitTestClassShouldHaveRunAs',
+                    desc: 'Unit tests should call System.runAs() to test with specific user context.',
+                },
+                {
+                    id: 'best-test-method-annotation',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'ApexUnitTestMethodShouldHaveIsTestAnnotation',
+                    desc: 'Test methods should use @isTest annotation instead of the deprecated testMethod keyword.',
+                },
+                {
+                    id: 'best-no-global-modifier',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'AvoidGlobalModifier',
+                    desc: 'Avoid using the global modifier unless required for managed packages.',
+                },
+                {
+                    id: 'best-no-logic-in-trigger',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'AvoidLogicInTrigger',
+                    desc: 'Triggers should delegate to a handler class and not contain business logic directly.',
+                },
+                {
+                    id: 'best-debug-use-logging-level',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'DebugsShouldUseLoggingLevel',
+                    desc: 'System.debug() calls should always specify a LoggingLevel parameter.',
+                },
+                {
+                    id: 'best-no-future-annotation',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'AvoidNonRestrictiveQueries',
+                    desc: 'Avoid @future methods; prefer Queueable, Batch, or Platform Events instead.',
+                },
+                {
+                    id: 'best-queueable-needs-finalizer',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'QueueableShouldAttachFinalizer',
+                    desc: 'Queueable classes should attach a Finalizer for robust error handling.',
+                },
+                {
+                    id: 'best-no-unused-local-variable',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'UnusedLocalVariable',
+                    desc: 'Local variables that are declared but never read should be removed.',
+                },
+                {
+                    id: 'best-test-assertions-have-message',
+                    category: 'best-practices',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'ApexAssertionsShouldIncludeMessage',
+                    desc: 'System.assert() calls should include a failure message for clearer test output.',
+                },
 
-const RULES = [
-  // Best Practices
-  { id: 'best-test-has-asserts', category: 'best-practices', type: 'problem', recommended: true,
-    pmd: 'ApexUnitTestClassShouldHaveAsserts',
-    desc: 'Unit test methods must contain at least one System.assert().' },
-  { id: 'best-test-no-see-all-data', category: 'best-practices', type: 'problem', recommended: true,
-    pmd: 'ApexUnitTestShouldNotUseSeeAllDataTrue',
-    desc: 'Test classes should not use @isTest(SeeAllData=true).' },
-  { id: 'best-test-has-run-as', category: 'best-practices', type: 'suggestion', recommended: false,
-    pmd: 'ApexUnitTestClassShouldHaveRunAs',
-    desc: 'Unit tests should call System.runAs() to test with specific user context.' },
-  { id: 'best-test-method-annotation', category: 'best-practices', type: 'suggestion', recommended: true,
-    pmd: 'ApexUnitTestMethodShouldHaveIsTestAnnotation',
-    desc: 'Test methods should use @isTest annotation instead of the deprecated testMethod keyword.' },
-  { id: 'best-no-global-modifier', category: 'best-practices', type: 'suggestion', recommended: true,
-    pmd: 'AvoidGlobalModifier',
-    desc: 'Avoid using the global modifier unless required for managed packages.' },
-  { id: 'best-no-logic-in-trigger', category: 'best-practices', type: 'suggestion', recommended: true,
-    pmd: 'AvoidLogicInTrigger',
-    desc: 'Triggers should delegate to a handler class and not contain business logic directly.' },
-  { id: 'best-debug-use-logging-level', category: 'best-practices', type: 'suggestion', recommended: true,
-    pmd: 'DebugsShouldUseLoggingLevel',
-    desc: 'System.debug() calls should always specify a LoggingLevel parameter.' },
-  { id: 'best-no-future-annotation', category: 'best-practices', type: 'suggestion', recommended: true,
-    pmd: 'AvoidNonRestrictiveQueries',
-    desc: 'Avoid @future methods; prefer Queueable, Batch, or Platform Events instead.' },
-  { id: 'best-queueable-needs-finalizer', category: 'best-practices', type: 'suggestion', recommended: false,
-    pmd: 'QueueableShouldAttachFinalizer',
-    desc: 'Queueable classes should attach a Finalizer for robust error handling.' },
-  { id: 'best-no-unused-local-variable', category: 'best-practices', type: 'suggestion', recommended: false,
-    pmd: 'UnusedLocalVariable',
-    desc: 'Local variables that are declared but never read should be removed.' },
-  { id: 'best-test-assertions-have-message', category: 'best-practices', type: 'suggestion', recommended: false,
-    pmd: 'ApexAssertionsShouldIncludeMessage',
-    desc: 'System.assert() calls should include a failure message for clearer test output.' },
+                // Code Style
+                {
+                    id: 'style-naming-conventions',
+                    category: 'code-style',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'FieldNamingConventions / MethodNamingConventions / ClassNamingConventions',
+                    desc: 'Class/method/field names should follow Apex naming conventions.',
+                },
+                {
+                    id: 'style-braces-for-if',
+                    category: 'code-style',
+                    type: 'layout',
+                    recommended: true,
+                    pmd: 'IfStmtsMustUseBraces',
+                    desc: 'if statements must always use curly braces.',
+                },
+                {
+                    id: 'style-braces-for-for',
+                    category: 'code-style',
+                    type: 'layout',
+                    recommended: true,
+                    pmd: 'ForLoopsMustUseBraces',
+                    desc: 'for loops must always use curly braces.',
+                },
+                {
+                    id: 'style-braces-for-while',
+                    category: 'code-style',
+                    type: 'layout',
+                    recommended: true,
+                    pmd: 'WhileLoopsMustUseBraces',
+                    desc: 'while loops must always use curly braces.',
+                },
+                {
+                    id: 'style-fields-at-start',
+                    category: 'code-style',
+                    type: 'layout',
+                    recommended: false,
+                    pmd: 'FieldDeclarationsShouldBeAtStart',
+                    desc: 'Field declarations should appear before methods in a class body.',
+                },
+                {
+                    id: 'style-one-declaration-per-line',
+                    category: 'code-style',
+                    type: 'layout',
+                    recommended: false,
+                    pmd: 'OneDeclarationPerLine',
+                    desc: 'Only one variable should be declared per line.',
+                },
+                {
+                    id: 'style-annotation-naming',
+                    category: 'code-style',
+                    type: 'layout',
+                    recommended: false,
+                    pmd: 'AnnotationNamingConventions',
+                    desc: 'Annotation types should follow naming conventions.',
+                },
 
-  // Code Style
-  { id: 'style-naming-conventions', category: 'code-style', type: 'suggestion', recommended: true,
-    pmd: 'FieldNamingConventions / MethodNamingConventions / ClassNamingConventions',
-    desc: 'Class/method/field names should follow Apex naming conventions.' },
-  { id: 'style-braces-for-if', category: 'code-style', type: 'layout', recommended: true,
-    pmd: 'IfStmtsMustUseBraces',
-    desc: 'if statements must always use curly braces.' },
-  { id: 'style-braces-for-for', category: 'code-style', type: 'layout', recommended: true,
-    pmd: 'ForLoopsMustUseBraces',
-    desc: 'for loops must always use curly braces.' },
-  { id: 'style-braces-for-while', category: 'code-style', type: 'layout', recommended: true,
-    pmd: 'WhileLoopsMustUseBraces',
-    desc: 'while loops must always use curly braces.' },
-  { id: 'style-fields-at-start', category: 'code-style', type: 'layout', recommended: false,
-    pmd: 'FieldDeclarationsShouldBeAtStart',
-    desc: 'Field declarations should appear before methods in a class body.' },
-  { id: 'style-one-declaration-per-line', category: 'code-style', type: 'layout', recommended: false,
-    pmd: 'OneDeclarationPerLine',
-    desc: 'Only one variable should be declared per line.' },
-  { id: 'style-annotation-naming', category: 'code-style', type: 'layout', recommended: false,
-    pmd: 'AnnotationNamingConventions',
-    desc: 'Annotation types should follow naming conventions.' },
+                // Design
+                {
+                    id: 'design-cyclomatic-complexity',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'CyclomaticComplexity',
+                    desc: 'Methods should not exceed a cyclomatic complexity threshold (default: 10).',
+                },
+                {
+                    id: 'design-cognitive-complexity',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'CognitiveComplexity',
+                    desc: 'Methods should not exceed a cognitive complexity threshold (default: 15).',
+                },
+                {
+                    id: 'design-no-deep-nesting',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'TooDeepNesting',
+                    desc: 'Code blocks should not be nested more than the allowed depth (default: 4).',
+                },
+                {
+                    id: 'design-excessive-parameters',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'ExcessiveParameterList',
+                    desc: 'Methods should not have more than the allowed number of parameters (default: 4).',
+                },
+                {
+                    id: 'design-excessive-public-count',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'ExcessivePublicCount',
+                    desc: 'Classes should not have too many public methods and attributes (default: 20).',
+                },
+                {
+                    id: 'design-too-many-fields',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'TooManyFields',
+                    desc: 'Classes should not have too many fields (default: 15).',
+                },
+                {
+                    id: 'design-no-boolean-parameters',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'AvoidDeeplyNestedIfStmts',
+                    desc: 'Avoid boolean method parameters; use separate methods or an enum instead.',
+                },
+                {
+                    id: 'design-ncss-method-count',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'NcssMethodCount',
+                    desc: 'Methods should not exceed a non-commenting source statement threshold (default: 20).',
+                },
+                {
+                    id: 'design-no-unused-method',
+                    category: 'design',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'UnusedMethod',
+                    desc: 'Methods that are never called within the class should be removed or made private.',
+                },
 
-  // Design
-  { id: 'design-cyclomatic-complexity', category: 'design', type: 'suggestion', recommended: true,
-    pmd: 'CyclomaticComplexity',
-    desc: 'Methods should not exceed a cyclomatic complexity threshold (default: 10).' },
-  { id: 'design-cognitive-complexity', category: 'design', type: 'suggestion', recommended: false,
-    pmd: 'CognitiveComplexity',
-    desc: 'Methods should not exceed a cognitive complexity threshold (default: 15).' },
-  { id: 'design-no-deep-nesting', category: 'design', type: 'suggestion', recommended: true,
-    pmd: 'TooDeepNesting',
-    desc: 'Code blocks should not be nested more than the allowed depth (default: 4).' },
-  { id: 'design-excessive-parameters', category: 'design', type: 'suggestion', recommended: true,
-    pmd: 'ExcessiveParameterList',
-    desc: 'Methods should not have more than the allowed number of parameters (default: 4).' },
-  { id: 'design-excessive-public-count', category: 'design', type: 'suggestion', recommended: false,
-    pmd: 'ExcessivePublicCount',
-    desc: 'Classes should not have too many public methods and attributes (default: 20).' },
-  { id: 'design-too-many-fields', category: 'design', type: 'suggestion', recommended: false,
-    pmd: 'TooManyFields',
-    desc: 'Classes should not have too many fields (default: 15).' },
-  { id: 'design-no-boolean-parameters', category: 'design', type: 'suggestion', recommended: false,
-    pmd: 'AvoidDeeplyNestedIfStmts',
-    desc: 'Avoid boolean method parameters; use separate methods or an enum instead.' },
-  { id: 'design-ncss-method-count', category: 'design', type: 'suggestion', recommended: false,
-    pmd: 'NcssMethodCount',
-    desc: 'Methods should not exceed a non-commenting source statement threshold (default: 20).' },
-  { id: 'design-no-unused-method', category: 'design', type: 'suggestion', recommended: false,
-    pmd: 'UnusedMethod',
-    desc: 'Methods that are never called within the class should be removed or made private.' },
+                // Documentation
+                {
+                    id: 'doc-require-apexdoc',
+                    category: 'documentation',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'ApexDoc',
+                    desc: 'Public and global methods/classes should have ApexDoc comments.',
+                },
 
-  // Documentation
-  { id: 'doc-require-apexdoc', category: 'documentation', type: 'suggestion', recommended: false,
-    pmd: 'ApexDoc',
-    desc: 'Public and global methods/classes should have ApexDoc comments.' },
+                // Error Prone
+                {
+                    id: 'error-no-empty-catch',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'EmptyCatchBlock',
+                    desc: 'Catch blocks must not be empty — at minimum log the exception.',
+                },
+                {
+                    id: 'error-no-empty-if',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'EmptyIfStmt',
+                    desc: 'if statements must not have empty bodies.',
+                },
+                {
+                    id: 'error-no-empty-while',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'EmptyWhileStmt',
+                    desc: 'while loops must not have empty bodies.',
+                },
+                {
+                    id: 'error-no-empty-try',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'EmptyTryOrFinallyBlock',
+                    desc: 'try blocks must not be empty.',
+                },
+                {
+                    id: 'error-no-csrf-in-constructor',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexCSRF',
+                    desc: 'DML operations in constructors can cause CSRF vulnerabilities in Visualforce pages.',
+                },
+                {
+                    id: 'error-no-hardcoded-id',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexBadCrypto',
+                    desc: 'Hardcoded 15- or 18-character Salesforce IDs make code non-portable across orgs.',
+                },
+                {
+                    id: 'error-no-direct-trigger-map-access',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexCRUDViolation',
+                    desc: 'Always null-check Trigger.newMap/oldMap entries before indexing to avoid NPEs.',
+                },
+                {
+                    id: 'error-no-nonexistent-annotation',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'NonExistentCustomSettingOrMetadata',
+                    desc: 'References to non-standard annotations that do not exist in Apex.',
+                },
+                {
+                    id: 'error-no-stateful-db-result',
+                    category: 'error-prone',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'AvoidStatefulDbResultInBatch',
+                    desc: 'Avoid storing Database.SaveResult objects as instance variables in Batch classes.',
+                },
+                {
+                    id: 'error-aura-enabled-getter-public',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'AuraEnabledWithoutCatchBlock',
+                    desc: '@AuraEnabled methods should be public or global, not private.',
+                },
+                {
+                    id: 'error-no-method-name-as-class',
+                    category: 'error-prone',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'MethodWithSameNameAsEnclosingClass',
+                    desc: 'Methods should not have the same name as the class they are defined in.',
+                },
+                {
+                    id: 'error-override-both-equals-hashcode',
+                    category: 'error-prone',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'OverrideBothEqualsAndHashcode',
+                    desc: 'Overriding equals() without hashCode() (or vice versa) leads to inconsistent behaviour.',
+                },
+                {
+                    id: 'error-test-methods-in-test-class',
+                    category: 'error-prone',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'TestMethodsMustBeInTestClasses',
+                    desc: 'Methods annotated @isTest must reside in a class annotated @isTest.',
+                },
+                {
+                    id: 'error-no-type-shadow-namespace',
+                    category: 'error-prone',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'AvoidShadowingField',
+                    desc: 'Avoid naming local variables or parameters the same as common Apex types/namespaces.',
+                },
 
-  // Error Prone
-  { id: 'error-no-empty-catch', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'EmptyCatchBlock',
-    desc: 'Catch blocks must not be empty — at minimum log the exception.' },
-  { id: 'error-no-empty-if', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'EmptyIfStmt',
-    desc: 'if statements must not have empty bodies.' },
-  { id: 'error-no-empty-while', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'EmptyWhileStmt',
-    desc: 'while loops must not have empty bodies.' },
-  { id: 'error-no-empty-try', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'EmptyTryOrFinallyBlock',
-    desc: 'try blocks must not be empty.' },
-  { id: 'error-no-csrf-in-constructor', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'ApexCSRF',
-    desc: 'DML operations in constructors can cause CSRF vulnerabilities in Visualforce pages.' },
-  { id: 'error-no-hardcoded-id', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'ApexBadCrypto',
-    desc: 'Hardcoded 15- or 18-character Salesforce IDs make code non-portable across orgs.' },
-  { id: 'error-no-direct-trigger-map-access', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'ApexCRUDViolation',
-    desc: 'Always null-check Trigger.newMap/oldMap entries before indexing to avoid NPEs.' },
-  { id: 'error-no-nonexistent-annotation', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'NonExistentCustomSettingOrMetadata',
-    desc: 'References to non-standard annotations that do not exist in Apex.' },
-  { id: 'error-no-stateful-db-result', category: 'error-prone', type: 'suggestion', recommended: false,
-    pmd: 'AvoidStatefulDbResultInBatch',
-    desc: 'Avoid storing Database.SaveResult objects as instance variables in Batch classes.' },
-  { id: 'error-aura-enabled-getter-public', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'AuraEnabledWithoutCatchBlock',
-    desc: '@AuraEnabled methods should be public or global, not private.' },
-  { id: 'error-no-method-name-as-class', category: 'error-prone', type: 'problem', recommended: true,
-    pmd: 'MethodWithSameNameAsEnclosingClass',
-    desc: 'Methods should not have the same name as the class they are defined in.' },
-  { id: 'error-override-both-equals-hashcode', category: 'error-prone', type: 'suggestion', recommended: true,
-    pmd: 'OverrideBothEqualsAndHashcode',
-    desc: 'Overriding equals() without hashCode() (or vice versa) leads to inconsistent behaviour.' },
-  { id: 'error-test-methods-in-test-class', category: 'error-prone', type: 'suggestion', recommended: true,
-    pmd: 'TestMethodsMustBeInTestClasses',
-    desc: 'Methods annotated @isTest must reside in a class annotated @isTest.' },
-  { id: 'error-no-type-shadow-namespace', category: 'error-prone', type: 'suggestion', recommended: false,
-    pmd: 'AvoidShadowingField',
-    desc: 'Avoid naming local variables or parameters the same as common Apex types/namespaces.' },
+                // Performance
+                {
+                    id: 'perf-no-dml-in-loop',
+                    category: 'performance',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'AvoidDmlStatementsInLoops',
+                    desc: 'DML statements inside loops will quickly hit governor limits — bulkify instead.',
+                },
+                {
+                    id: 'perf-no-debug-statements',
+                    category: 'performance',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'AvoidDebugStatements',
+                    desc: 'Debug statements add overhead and should be removed from production code.',
+                },
+                {
+                    id: 'perf-no-non-restrictive-query',
+                    category: 'performance',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexSOQLInjection / WherelessSOQLQuery',
+                    desc: 'SOQL queries without a WHERE clause return all records and can breach governor limits.',
+                },
+                {
+                    id: 'perf-no-eager-describe',
+                    category: 'performance',
+                    type: 'suggestion',
+                    recommended: false,
+                    pmd: 'AvoidLazyDescribeSetting',
+                    desc: 'Cache Schema.describe() results statically rather than re-computing per call.',
+                },
+                {
+                    id: 'perf-no-high-cost-in-loop',
+                    category: 'performance',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'AvoidSoqlInLoops',
+                    desc: 'SOQL queries, describe calls, and other expensive operations should not be in loops.',
+                },
 
-  // Performance
-  { id: 'perf-no-dml-in-loop', category: 'performance', type: 'problem', recommended: true,
-    pmd: 'AvoidDmlStatementsInLoops',
-    desc: 'DML statements inside loops will quickly hit governor limits — bulkify instead.' },
-  { id: 'perf-no-debug-statements', category: 'performance', type: 'suggestion', recommended: false,
-    pmd: 'AvoidDebugStatements',
-    desc: 'Debug statements add overhead and should be removed from production code.' },
-  { id: 'perf-no-non-restrictive-query', category: 'performance', type: 'problem', recommended: true,
-    pmd: 'ApexSOQLInjection / WherelessSOQLQuery',
-    desc: 'SOQL queries without a WHERE clause return all records and can breach governor limits.' },
-  { id: 'perf-no-eager-describe', category: 'performance', type: 'suggestion', recommended: false,
-    pmd: 'AvoidLazyDescribeSetting',
-    desc: 'Cache Schema.describe() results statically rather than re-computing per call.' },
-  { id: 'perf-no-high-cost-in-loop', category: 'performance', type: 'problem', recommended: true,
-    pmd: 'AvoidSoqlInLoops',
-    desc: 'SOQL queries, describe calls, and other expensive operations should not be in loops.' },
+                // Security
+                {
+                    id: 'security-no-hardcoded-crypto',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexBadCrypto',
+                    desc: 'Do not pass hardcoded Strings to cryptographic methods.',
+                },
+                {
+                    id: 'security-crud-violation',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexCRUDViolation',
+                    desc: 'Check CRUD and FLS permissions before performing DML or field access.',
+                },
+                {
+                    id: 'security-no-dangerous-methods',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexDangerousMethods',
+                    desc: 'Avoid dangerous methods such as Database.scheduleBatch().',
+                },
+                {
+                    id: 'security-no-insecure-endpoint',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexInsecureEndpoint',
+                    desc: 'HTTP (not HTTPS) endpoints transmit data in plain text and must not be used.',
+                },
+                {
+                    id: 'security-no-open-redirect',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexOpenRedirect',
+                    desc: 'Avoid open redirects by validating redirect URLs.',
+                },
+                {
+                    id: 'security-sharing-violations',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexSharingViolations',
+                    desc: "Classes that access data must declare 'with sharing', 'without sharing', or 'inherited sharing'.",
+                },
+                {
+                    id: 'security-no-soql-injection',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexSOQLInjection',
+                    desc: 'Dynamic SOQL built via concatenation may allow SOQL injection; use bind variables.',
+                },
+                {
+                    id: 'security-use-named-credentials',
+                    category: 'security',
+                    type: 'suggestion',
+                    recommended: true,
+                    pmd: 'ApexSuggestUsingNamedCredential',
+                    desc: 'Use Named Credentials for HTTP callouts instead of hardcoded usernames/passwords.',
+                },
+                {
+                    id: 'security-no-xss-false-escape',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexXSSFromEscapeFalse',
+                    desc: 'Visualforce components with escape="false" are vulnerable to XSS attacks.',
+                },
+                {
+                    id: 'security-no-xss-from-url',
+                    category: 'security',
+                    type: 'problem',
+                    recommended: true,
+                    pmd: 'ApexXSSFromURLParam',
+                    desc: 'URL parameter values used in Visualforce without escaping are XSS vectors.',
+                },
+            ];
 
-  // Security
-  { id: 'security-no-hardcoded-crypto', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexBadCrypto',
-    desc: 'Do not pass hardcoded Strings to cryptographic methods.' },
-  { id: 'security-crud-violation', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexCRUDViolation',
-    desc: 'Check CRUD and FLS permissions before performing DML or field access.' },
-  { id: 'security-no-dangerous-methods', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexDangerousMethods',
-    desc: 'Avoid dangerous methods such as Database.scheduleBatch().' },
-  { id: 'security-no-insecure-endpoint', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexInsecureEndpoint',
-    desc: 'HTTP (not HTTPS) endpoints transmit data in plain text and must not be used.' },
-  { id: 'security-no-open-redirect', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexOpenRedirect',
-    desc: 'Avoid open redirects by validating redirect URLs.' },
-  { id: 'security-sharing-violations', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexSharingViolations',
-    desc: "Classes that access data must declare 'with sharing', 'without sharing', or 'inherited sharing'." },
-  { id: 'security-no-soql-injection', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexSOQLInjection',
-    desc: 'Dynamic SOQL built via concatenation may allow SOQL injection; use bind variables.' },
-  { id: 'security-use-named-credentials', category: 'security', type: 'suggestion', recommended: true,
-    pmd: 'ApexSuggestUsingNamedCredential',
-    desc: 'Use Named Credentials for HTTP callouts instead of hardcoded usernames/passwords.' },
-  { id: 'security-no-xss-false-escape', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexXSSFromEscapeFalse',
-    desc: 'Visualforce components with escape="false" are vulnerable to XSS attacks.' },
-  { id: 'security-no-xss-from-url', category: 'security', type: 'problem', recommended: true,
-    pmd: 'ApexXSSFromURLParam',
-    desc: 'URL parameter values used in Visualforce without escaping are XSS vectors.' },
-];
+            // ── Rules table ────────────────────────────────────────────────────────────
 
-// ── Rules table ────────────────────────────────────────────────────────────
+            let sortCol = 'id';
+            let sortAsc = true;
 
-let sortCol = 'id';
-let sortAsc = true;
+            function catLabel(cat) {
+                return cat.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            }
 
-function catLabel(cat) {
-  return cat.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
+            function catClass(cat) {
+                return 'cat-' + cat;
+            }
 
-function catClass(cat) {
-  return 'cat-' + cat;
-}
+            function typeClass(type) {
+                return 'type-' + type;
+            }
 
-function typeClass(type) {
-  return 'type-' + type;
-}
+            function renderRulesTable() {
+                const q = (document.getElementById('search').value || '').toLowerCase();
+                const cat = document.getElementById('filter-cat').value;
+                const typ = document.getElementById('filter-type').value;
 
-function renderRulesTable() {
-  const q   = (document.getElementById('search').value || '').toLowerCase();
-  const cat = document.getElementById('filter-cat').value;
-  const typ = document.getElementById('filter-type').value;
+                let rows = RULES.filter((r) => {
+                    if (cat && r.category !== cat) return false;
+                    if (typ && r.type !== typ) return false;
+                    if (
+                        q &&
+                        !r.id.includes(q) &&
+                        !r.pmd.toLowerCase().includes(q) &&
+                        !r.desc.toLowerCase().includes(q)
+                    )
+                        return false;
+                    return true;
+                });
 
-  let rows = RULES.filter(r => {
-    if (cat && r.category !== cat) return false;
-    if (typ && r.type !== typ) return false;
-    if (q && !r.id.includes(q) && !r.pmd.toLowerCase().includes(q) && !r.desc.toLowerCase().includes(q)) return false;
-    return true;
-  });
+                rows.sort((a, b) => {
+                    const av = a[sortCol] || '';
+                    const bv = b[sortCol] || '';
+                    return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+                });
 
-  rows.sort((a, b) => {
-    const av = a[sortCol] || '';
-    const bv = b[sortCol] || '';
-    return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-  });
+                const wrap = document.getElementById('rules-table-wrap');
+                if (rows.length === 0) {
+                    wrap.innerHTML = '<p class="no-results">No rules match your filters.</p>';
+                    return;
+                }
 
-  const wrap = document.getElementById('rules-table-wrap');
-  if (rows.length === 0) {
-    wrap.innerHTML = '<p class="no-results">No rules match your filters.</p>';
-    return;
-  }
+                const cols = [
+                    { key: 'id', label: 'Rule' },
+                    { key: 'category', label: 'Category' },
+                    { key: 'type', label: 'Type' },
+                    { key: 'pmd', label: 'PMD Rule' },
+                    { key: 'desc', label: 'Description' },
+                ];
 
-  const cols = [
-    { key: 'id',       label: 'Rule' },
-    { key: 'category', label: 'Category' },
-    { key: 'type',     label: 'Type' },
-    { key: 'pmd',      label: 'PMD Rule' },
-    { key: 'desc',     label: 'Description' },
-  ];
+                let html = '<table><thead><tr>';
+                for (const c of cols) {
+                    const indicator = sortCol === c.key ? (sortAsc ? ' ↑' : ' ↓') : '';
+                    html += `<th onclick="sortBy('${c.key}')">${c.label}${indicator}</th>`;
+                }
+                html += '</tr></thead><tbody>';
 
-  let html = '<table><thead><tr>';
-  for (const c of cols) {
-    const indicator = sortCol === c.key ? (sortAsc ? ' ↑' : ' ↓') : '';
-    html += `<th onclick="sortBy('${c.key}')">${c.label}${indicator}</th>`;
-  }
-  html += '</tr></thead><tbody>';
-
-  for (const r of rows) {
-    html += `<tr>
+                for (const r of rows) {
+                    html += `<tr>
       <td><code>apex/${r.id}</code></td>
       <td><span class="badge-cat ${catClass(r.category)}">${catLabel(r.category)}</span></td>
       <td><span class="badge-type ${typeClass(r.type)}">${r.type}</span></td>
       <td><a href="https://docs.pmd-code.org/latest/pmd_rules_apex.html" target="_blank" title="${r.pmd}">${r.pmd.split(' / ')[0]}</a></td>
       <td>${r.desc}</td>
     </tr>`;
-  }
+                }
 
-  html += '</tbody></table>';
-  wrap.innerHTML = html;
-}
+                html += '</tbody></table>';
+                wrap.innerHTML = html;
+            }
 
-function filterRules() { renderRulesTable(); }
+            function filterRules() {
+                renderRulesTable();
+            }
 
-function sortBy(col) {
-  if (sortCol === col) sortAsc = !sortAsc;
-  else { sortCol = col; sortAsc = true; }
-  renderRulesTable();
-}
+            function sortBy(col) {
+                if (sortCol === col) sortAsc = !sortAsc;
+                else {
+                    sortCol = col;
+                    sortAsc = true;
+                }
+                renderRulesTable();
+            }
 
-// ── PMD XML Converter ──────────────────────────────────────────────────────
+            // ── PMD XML Converter ──────────────────────────────────────────────────────
 
-const PMD_TO_ESLINT = {
-  // best-practices
-  apexunittestclassshouldhaveasserts: 'best-test-has-asserts',
-  apexunittestshouldnotuseseealldatatrue: 'best-test-no-see-all-data',
-  apexunittestclassshouldhaverunas: 'best-test-has-run-as',
-  apexunittestmethodshouldhaveis: 'best-test-method-annotation',
-  apexunittestmethodshouldhaveistestannotation: 'best-test-method-annotation',
-  avoidglobalmodifier: 'best-no-global-modifier',
-  avoidlogicintrigger: 'best-no-logic-in-trigger',
-  debugsshouldusellogginglevel: 'best-debug-use-logging-level',
-  debugsshoulduselogginglevel: 'best-debug-use-logging-level',
-  avoidfutureannotation: 'best-no-future-annotation',
-  queueableshouldattachfinalizer: 'best-queueable-needs-finalizer',
-  unusedlocalvariable: 'best-no-unused-local-variable',
-  apexassertionsshouldincludemessage: 'best-test-assertions-have-message',
-  // code-style
-  fieldnamingconventions: 'style-naming-conventions',
-  methodnamingconventions: 'style-naming-conventions',
-  classnamingconventions: 'style-naming-conventions',
-  ifstmtsmustusebraces: 'style-braces-for-if',
-  forloopsmustusebraces: 'style-braces-for-for',
-  whileloopsmustusebraces: 'style-braces-for-while',
-  fielddeclarationsshouldbeatstart: 'style-fields-at-start',
-  onedeclarationperline: 'style-one-declaration-per-line',
-  annotationnamingconventions: 'style-annotation-naming',
-  // design
-  cyclomaticcomplexity: 'design-cyclomatic-complexity',
-  cognitivecomplexity: 'design-cognitive-complexity',
-  toodeepcnesting: 'design-no-deep-nesting',
-  toodeepnesting: 'design-no-deep-nesting',
-  excessiveparameterlist: 'design-excessive-parameters',
-  excessivepubliccount: 'design-excessive-public-count',
-  toomanyfields: 'design-too-many-fields',
-  avoidbooleanparameters: 'design-no-boolean-parameters',
-  ncssmethodcount: 'design-ncss-method-count',
-  unusedmethod: 'design-no-unused-method',
-  // documentation
-  apexdoc: 'doc-require-apexdoc',
-  // error-prone
-  emptycatchblock: 'error-no-empty-catch',
-  emptyifstmt: 'error-no-empty-if',
-  emptywhilestmt: 'error-no-empty-while',
-  emptytryorfinallyblock: 'error-no-empty-try',
-  apexcsrf: 'error-no-csrf-in-constructor',
-  avoidhardcodedid: 'error-no-hardcoded-id',
-  nodirecttriggermapaccess: 'error-no-direct-trigger-map-access',
-  nonexistentcustomsettingormetadata: 'error-no-nonexistent-annotation',
-  avoidstatefuldbresultinbatch: 'error-no-stateful-db-result',
-  auraenabledwithoutcatchblock: 'error-aura-enabled-getter-public',
-  methodwithsamenameasenclosingclass: 'error-no-method-name-as-class',
-  overridebothequalsandhashcode: 'error-override-both-equals-hashcode',
-  testmethodsmustsbeintestclasses: 'error-test-methods-in-test-class',
-  testmethodsmustsbeintestclass: 'error-test-methods-in-test-class',
-  avoidshadowingfield: 'error-no-type-shadow-namespace',
-  // performance
-  avoiddmlstatementsinloops: 'perf-no-dml-in-loop',
-  avoiddebugstatements: 'perf-no-debug-statements',
-  wherelesssoqlquery: 'perf-no-non-restrictive-query',
-  avoidsoqlinloops: 'perf-no-high-cost-in-loop',
-  avoidlazydescribesetting: 'perf-no-eager-describe',
-  // security
-  apexbadcrypto: 'security-no-hardcoded-crypto',
-  apexcrudviolation: 'security-crud-violation',
-  apexdangerousmethods: 'security-no-dangerous-methods',
-  apexinsecureendpoint: 'security-no-insecure-endpoint',
-  apexopenredirect: 'security-no-open-redirect',
-  apexsharingviolations: 'security-sharing-violations',
-  apexsoqlinjection: 'security-no-soql-injection',
-  apexsuggestusingnamedcredential: 'security-use-named-credentials',
-  apexsuggestusingnamedcredentials: 'security-use-named-credentials',
-  apexxssfromescapefalse: 'security-no-xss-false-escape',
-  apexssfromescapefalse: 'security-no-xss-false-escape',
-  apexssfromurlparam: 'security-no-xss-from-url',
-  apexssfromurlparameter: 'security-no-xss-from-url',
-};
+            const PMD_TO_ESLINT = {
+                // best-practices
+                apexunittestclassshouldhaveasserts: 'best-test-has-asserts',
+                apexunittestshouldnotuseseealldatatrue: 'best-test-no-see-all-data',
+                apexunittestclassshouldhaverunas: 'best-test-has-run-as',
+                apexunittestmethodshouldhaveis: 'best-test-method-annotation',
+                apexunittestmethodshouldhaveistestannotation: 'best-test-method-annotation',
+                avoidglobalmodifier: 'best-no-global-modifier',
+                avoidlogicintrigger: 'best-no-logic-in-trigger',
+                debugsshouldusellogginglevel: 'best-debug-use-logging-level',
+                debugsshoulduselogginglevel: 'best-debug-use-logging-level',
+                avoidfutureannotation: 'best-no-future-annotation',
+                queueableshouldattachfinalizer: 'best-queueable-needs-finalizer',
+                unusedlocalvariable: 'best-no-unused-local-variable',
+                apexassertionsshouldincludemessage: 'best-test-assertions-have-message',
+                // code-style
+                fieldnamingconventions: 'style-naming-conventions',
+                methodnamingconventions: 'style-naming-conventions',
+                classnamingconventions: 'style-naming-conventions',
+                ifstmtsmustusebraces: 'style-braces-for-if',
+                forloopsmustusebraces: 'style-braces-for-for',
+                whileloopsmustusebraces: 'style-braces-for-while',
+                fielddeclarationsshouldbeatstart: 'style-fields-at-start',
+                onedeclarationperline: 'style-one-declaration-per-line',
+                annotationnamingconventions: 'style-annotation-naming',
+                // design
+                cyclomaticcomplexity: 'design-cyclomatic-complexity',
+                cognitivecomplexity: 'design-cognitive-complexity',
+                toodeepcnesting: 'design-no-deep-nesting',
+                toodeepnesting: 'design-no-deep-nesting',
+                excessiveparameterlist: 'design-excessive-parameters',
+                excessivepubliccount: 'design-excessive-public-count',
+                toomanyfields: 'design-too-many-fields',
+                avoidbooleanparameters: 'design-no-boolean-parameters',
+                ncssmethodcount: 'design-ncss-method-count',
+                unusedmethod: 'design-no-unused-method',
+                // documentation
+                apexdoc: 'doc-require-apexdoc',
+                // error-prone
+                emptycatchblock: 'error-no-empty-catch',
+                emptyifstmt: 'error-no-empty-if',
+                emptywhilestmt: 'error-no-empty-while',
+                emptytryorfinallyblock: 'error-no-empty-try',
+                apexcsrf: 'error-no-csrf-in-constructor',
+                avoidhardcodedid: 'error-no-hardcoded-id',
+                nodirecttriggermapaccess: 'error-no-direct-trigger-map-access',
+                nonexistentcustomsettingormetadata: 'error-no-nonexistent-annotation',
+                avoidstatefuldbresultinbatch: 'error-no-stateful-db-result',
+                auraenabledwithoutcatchblock: 'error-aura-enabled-getter-public',
+                methodwithsamenameasenclosingclass: 'error-no-method-name-as-class',
+                overridebothequalsandhashcode: 'error-override-both-equals-hashcode',
+                testmethodsmustsbeintestclasses: 'error-test-methods-in-test-class',
+                testmethodsmustsbeintestclass: 'error-test-methods-in-test-class',
+                avoidshadowingfield: 'error-no-type-shadow-namespace',
+                // performance
+                avoiddmlstatementsinloops: 'perf-no-dml-in-loop',
+                avoiddebugstatements: 'perf-no-debug-statements',
+                wherelesssoqlquery: 'perf-no-non-restrictive-query',
+                avoidsoqlinloops: 'perf-no-high-cost-in-loop',
+                avoidlazydescribesetting: 'perf-no-eager-describe',
+                // security
+                apexbadcrypto: 'security-no-hardcoded-crypto',
+                apexcrudviolation: 'security-crud-violation',
+                apexdangerousmethods: 'security-no-dangerous-methods',
+                apexinsecureendpoint: 'security-no-insecure-endpoint',
+                apexopenredirect: 'security-no-open-redirect',
+                apexsharingviolations: 'security-sharing-violations',
+                apexsoqlinjection: 'security-no-soql-injection',
+                apexsuggestusingnamedcredential: 'security-use-named-credentials',
+                apexsuggestusingnamedcredentials: 'security-use-named-credentials',
+                apexxssfromescapefalse: 'security-no-xss-false-escape',
+                apexssfromescapefalse: 'security-no-xss-false-escape',
+                apexssfromurlparam: 'security-no-xss-from-url',
+                apexssfromurlparameter: 'security-no-xss-from-url',
+            };
 
-function parsePMDXML(xml) {
-  // Normalise into DOM
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml.trim(), 'application/xml');
-  const parseError = doc.querySelector('parsererror');
-  if (parseError) throw new Error('XML parse error: ' + parseError.textContent.split('\n')[0]);
+            function parsePMDXML(xml) {
+                // Normalise into DOM
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(xml.trim(), 'application/xml');
+                const parseError = doc.querySelector('parsererror');
+                if (parseError)
+                    throw new Error('XML parse error: ' + parseError.textContent.split('\n')[0]);
 
-  // Support both single <rule> and a <ruleset> wrapper
-  const rules = Array.from(doc.querySelectorAll('rule'));
-  if (rules.length === 0) throw new Error('No <rule> elements found in input.');
-  return rules;
-}
+                // Support both single <rule> and a <ruleset> wrapper
+                const rules = Array.from(doc.querySelectorAll('rule'));
+                if (rules.length === 0) throw new Error('No <rule> elements found in input.');
+                return rules;
+            }
 
-function ruleNameToSlug(name) {
-  return name
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-    .toLowerCase();
-}
+            function ruleNameToSlug(name) {
+                return name
+                    .replace(/([a-z])([A-Z])/g, '$1-$2')
+                    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+                    .toLowerCase();
+            }
 
-function ruleNameToConst(name) {
-  return name.charAt(0).toLowerCase() + name.slice(1);
-}
+            function ruleNameToConst(name) {
+                return name.charAt(0).toLowerCase() + name.slice(1);
+            }
 
-function priority2severity(p) {
-  const n = parseInt(p, 10);
-  if (n <= 2) return 'error';
-  if (n === 3) return 'warn';
-  return 'off';
-}
+            function priority2severity(p) {
+                const n = parseInt(p, 10);
+                if (n <= 2) return 'error';
+                if (n === 3) return 'warn';
+                return 'off';
+            }
 
-function convert() {
-  const xml = document.getElementById('input').value.trim();
-  if (!xml) { showStatus('info', 'Please paste a PMD rule XML first.'); return; }
+            function convert() {
+                const xml = document.getElementById('input').value.trim();
+                if (!xml) {
+                    showStatus('info', 'Please paste a PMD rule XML first.');
+                    return;
+                }
 
-  try {
-    const ruleEls = parsePMDXML(xml);
-    const outLines = [];
-    const skeletons = [];
+                try {
+                    const ruleEls = parsePMDXML(xml);
+                    const outLines = [];
+                    const skeletons = [];
 
-    for (const el of ruleEls) {
-      const pmdName  = el.getAttribute('name') || 'UnknownRule';
-      const priority = el.querySelector('priority')?.textContent?.trim() || '3';
-      const desc     = el.querySelector('description')?.textContent?.trim().replace(/\s+/g, ' ') || '';
-      const since    = el.getAttribute('since') || '';
-      const url      = el.getAttribute('externalInfoUrl') || '';
-      const msg      = el.getAttribute('message') || desc.split('.')[0];
+                    for (const el of ruleEls) {
+                        const pmdName = el.getAttribute('name') || 'UnknownRule';
+                        const priority = el.querySelector('priority')?.textContent?.trim() || '3';
+                        const desc =
+                            el
+                                .querySelector('description')
+                                ?.textContent?.trim()
+                                .replace(/\s+/g, ' ') || '';
+                        const since = el.getAttribute('since') || '';
+                        const url = el.getAttribute('externalInfoUrl') || '';
+                        const msg = el.getAttribute('message') || desc.split('.')[0];
 
-      const lowerName = pmdName.toLowerCase().replace(/rule$/, '');
-      const eslintId  = PMD_TO_ESLINT[lowerName] || ('custom-' + ruleNameToSlug(pmdName));
-      const severity  = priority2severity(priority);
+                        const lowerName = pmdName.toLowerCase().replace(/rule$/, '');
+                        const eslintId =
+                            PMD_TO_ESLINT[lowerName] || 'custom-' + ruleNameToSlug(pmdName);
+                        const severity = priority2severity(priority);
 
-      outLines.push(`  // PMD: ${pmdName}${since ? ` (since ${since})` : ''}`);
-      outLines.push(`  'apex/${eslintId}': '${severity}',`);
+                        outLines.push(`  // PMD: ${pmdName}${since ? ` (since ${since})` : ''}`);
+                        outLines.push(`  'apex/${eslintId}': '${severity}',`);
 
-      // Build skeleton
-      const slug  = ruleNameToSlug(pmdName);
-      const varN  = ruleNameToConst(pmdName);
-      const catGuess = eslintId.split('-')[0];
-      const typeGuess = parseInt(priority, 10) <= 2 ? 'problem' : 'suggestion';
-      const msgKey = varN + 'Msg';
+                        // Build skeleton
+                        const slug = ruleNameToSlug(pmdName);
+                        const varN = ruleNameToConst(pmdName);
+                        const catGuess = eslintId.split('-')[0];
+                        const typeGuess = parseInt(priority, 10) <= 2 ? 'problem' : 'suggestion';
+                        const msgKey = varN + 'Msg';
 
-      skeletons.push(`// ── ${pmdName} ──────────────────────────────────────────────────────────
+                        skeletons.push(`// ── ${pmdName} ──────────────────────────────────────────────────────────
 // File: src/rules/${catGuess}/${slug}.js
 // PMD: ${pmdName}${since ? ` (since ${since})` : ''}
 
@@ -948,9 +1461,9 @@ export default {
   },
 };
 `);
-    }
+                    }
 
-    const output = `// eslint.config.js — generated from PMD XML (${ruleEls.length} rule${ruleEls.length !== 1 ? 's' : ''})
+                    const output = `// eslint.config.js — generated from PMD XML (${ruleEls.length} rule${ruleEls.length !== 1 ? 's' : ''})
 import apex from 'eslint-plugin-apex';
 
 export default [
@@ -964,46 +1477,57 @@ ${outLines.join('\n')}
   },
 ];`;
 
-    document.getElementById('output').value = output;
-    document.getElementById('skeleton').value = skeletons.join('\n\n' + '─'.repeat(60) + '\n\n');
+                    document.getElementById('output').value = output;
+                    document.getElementById('skeleton').value = skeletons.join(
+                        '\n\n' + '─'.repeat(60) + '\n\n',
+                    );
 
-    const mapped   = ruleEls.filter(el => {
-      const lowerName = (el.getAttribute('name') || '').toLowerCase().replace(/rule$/, '');
-      return PMD_TO_ESLINT[lowerName];
-    }).length;
-    const unmapped = ruleEls.length - mapped;
+                    const mapped = ruleEls.filter((el) => {
+                        const lowerName = (el.getAttribute('name') || '')
+                            .toLowerCase()
+                            .replace(/rule$/, '');
+                        return PMD_TO_ESLINT[lowerName];
+                    }).length;
+                    const unmapped = ruleEls.length - mapped;
 
-    showStatus('success',
-      `Converted ${ruleEls.length} rule${ruleEls.length !== 1 ? 's' : ''} — ` +
-      `${mapped} mapped to existing rules` +
-      (unmapped ? `, ${unmapped} generated as custom skeletons.` : '.'));
-  } catch (err) {
-    showStatus('error', err.message);
-  }
-}
+                    showStatus(
+                        'success',
+                        `Converted ${ruleEls.length} rule${ruleEls.length !== 1 ? 's' : ''} — ` +
+                            `${mapped} mapped to existing rules` +
+                            (unmapped ? `, ${unmapped} generated as custom skeletons.` : '.'),
+                    );
+                } catch (err) {
+                    showStatus('error', err.message);
+                }
+            }
 
-function showStatus(type, msg) {
-  const el = document.getElementById('status');
-  el.className = 'status ' + type;
-  el.textContent = msg;
-}
+            function showStatus(type, msg) {
+                const el = document.getElementById('status');
+                el.className = 'status ' + type;
+                el.textContent = msg;
+            }
 
-function copyOutput() {
-  const val = document.getElementById('output').value;
-  if (!val) { showStatus('info', 'Nothing to copy yet.'); return; }
-  navigator.clipboard.writeText(val).then(() => showStatus('success', 'Copied to clipboard.'));
-}
+            function copyOutput() {
+                const val = document.getElementById('output').value;
+                if (!val) {
+                    showStatus('info', 'Nothing to copy yet.');
+                    return;
+                }
+                navigator.clipboard
+                    .writeText(val)
+                    .then(() => showStatus('success', 'Copied to clipboard.'));
+            }
 
-function clearAll() {
-  document.getElementById('input').value = '';
-  document.getElementById('output').value = '';
-  document.getElementById('skeleton').value = '';
-  document.getElementById('status').className = 'status';
-  document.getElementById('status').textContent = '';
-}
+            function clearAll() {
+                document.getElementById('input').value = '';
+                document.getElementById('output').value = '';
+                document.getElementById('skeleton').value = '';
+                document.getElementById('status').className = 'status';
+                document.getElementById('status').textContent = '';
+            }
 
-function loadExample() {
-  document.getElementById('input').value = `<rule name="AvoidDebugStatements"
+            function loadExample() {
+                document.getElementById('input').value = `<rule name="AvoidDebugStatements"
       since="6.12.0"
       message="Avoid debug statements in production code"
       class="net.sourceforge.pmd.lang.apex.rule.performance.AvoidDebugStatementsRule"
@@ -1022,17 +1546,19 @@ function loadExample() {
   }
   ]]></example>
 </rule>`;
-}
+            }
 
-function copyPre(id) {
-  const pre = document.getElementById(id);
-  const text = pre.innerText.replace(/^copy\n/, '');
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = pre.querySelector('.copy-btn');
-    btn.textContent = '✓';
-    setTimeout(() => { btn.textContent = 'copy'; }, 1500);
-  });
-}
-</script>
-</body>
+            function copyPre(id) {
+                const pre = document.getElementById(id);
+                const text = pre.innerText.replace(/^copy\n/, '');
+                navigator.clipboard.writeText(text).then(() => {
+                    const btn = pre.querySelector('.copy-btn');
+                    btn.textContent = '✓';
+                    setTimeout(() => {
+                        btn.textContent = 'copy';
+                    }, 1500);
+                });
+            }
+        </script>
+    </body>
 </html>

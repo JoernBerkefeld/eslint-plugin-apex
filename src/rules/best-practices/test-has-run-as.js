@@ -7,21 +7,36 @@
  */
 
 function isTestClass(node) {
-    return node.modifiers && node.modifiers.some(
-        (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
+    return (
+        node.modifiers &&
+        node.modifiers.some((m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest')
     );
 }
 
 function containsRunAs(body) {
-    if (!body) return false;
+    if (!body) {
+        return false;
+    }
     const stmts = Array.isArray(body) ? body : body.body || [];
     for (const stmt of stmts) {
-        if (!stmt) continue;
-        if (stmt.type === 'ApexRunAsStatement') return true;
-        if (stmt.body && containsRunAs(stmt.body)) return true;
-        if (stmt.block && containsRunAs(stmt.block.body || [])) return true;
-        if (stmt.consequent && containsRunAs(stmt.consequent)) return true;
-        if (stmt.alternate && containsRunAs(stmt.alternate)) return true;
+        if (!stmt) {
+            continue;
+        }
+        if (stmt.type === 'ApexRunAsStatement') {
+            return true;
+        }
+        if (stmt.body && containsRunAs(stmt.body)) {
+            return true;
+        }
+        if (stmt.block && containsRunAs(stmt.block.body || [])) {
+            return true;
+        }
+        if (stmt.consequent && containsRunAs(stmt.consequent)) {
+            return true;
+        }
+        if (stmt.alternate && containsRunAs(stmt.alternate)) {
+            return true;
+        }
     }
     return false;
 }
@@ -44,7 +59,9 @@ export default {
     create(context) {
         return {
             ApexClassDeclaration(node) {
-                if (!isTestClass(node)) return;
+                if (!isTestClass(node)) {
+                    return;
+                }
                 if (!containsRunAs(node.body)) {
                     context.report({
                         node,

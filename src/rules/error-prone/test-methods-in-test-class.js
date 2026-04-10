@@ -7,17 +7,16 @@
  */
 
 function isTestClass(modifiers) {
-    return modifiers && modifiers.some(
-        (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
+    return (
+        modifiers &&
+        modifiers.some((m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest')
     );
 }
 
 function isTestMethod(modifiers) {
     return (
         modifiers &&
-        (modifiers.some(
-            (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
-        ) ||
+        (modifiers.some((m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest') ||
             modifiers.some((m) => m.value === 'testmethod'))
     );
 }
@@ -40,12 +39,11 @@ export default {
     create(context) {
         return {
             ApexClassDeclaration(node) {
-                if (isTestClass(node.modifiers)) return;
+                if (isTestClass(node.modifiers)) {
+                    return;
+                }
                 for (const member of node.body || []) {
-                    if (
-                        member.type === 'ApexMethodDeclaration' &&
-                        isTestMethod(member.modifiers)
-                    ) {
+                    if (member.type === 'ApexMethodDeclaration' && isTestMethod(member.modifiers)) {
                         context.report({
                             node: member,
                             messageId: 'testMethodOutsideTestClass',

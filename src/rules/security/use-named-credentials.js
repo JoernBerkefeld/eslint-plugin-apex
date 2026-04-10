@@ -20,7 +20,8 @@ export default {
     meta: {
         type: 'suggestion',
         docs: {
-            description: 'Use Named Credentials instead of hardcoding authentication details in HTTP requests',
+            description:
+                'Use Named Credentials instead of hardcoding authentication details in HTTP requests',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_security.html#apexsuggestusingnamedcred',
         },
@@ -60,11 +61,8 @@ export default {
                 if (callee.endsWith('.setendpoint') || callee === 'setendpoint') {
                     const args = node.arguments || [];
                     const urlArg = args[0];
-                    if (
-                        urlArg &&
-                        urlArg.type === 'ApexLiteralExpression'
-                    ) {
-                        const url = (urlArg.value || urlArg.raw || '').replace(/'/g, '');
+                    if (urlArg && urlArg.type === 'ApexLiteralExpression') {
+                        const url = (urlArg.value || urlArg.raw || '').replaceAll("'", '');
                         if (!url.startsWith('callout:') && !url.startsWith('{!')) {
                             context.report({
                                 node,

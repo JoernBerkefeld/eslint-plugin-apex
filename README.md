@@ -30,19 +30,17 @@ Requires **ESLint v9+** and **Node.js v18+**.
 // eslint.config.js
 import apex from 'eslint-plugin-apex';
 
-export default [
-  apex.configs.recommended,
-];
+export default [apex.configs.recommended];
 ```
 
 ## Available Configs
 
-| Config | Severity | Description |
-|---|---|---|
-| `apex.configs.recommended` | errors for `problem` rules, warnings for `suggestion` | Recommended set of rules |
-| `apex.configs.strict` | `error` for all | Every rule enabled as an error |
-| `apex.configs.security` | `error` | Security rules only |
-| `apex.configs.performance` | `error` | Performance rules only |
+| Config                     | Severity                                              | Description                    |
+| -------------------------- | ----------------------------------------------------- | ------------------------------ |
+| `apex.configs.recommended` | errors for `problem` rules, warnings for `suggestion` | Recommended set of rules       |
+| `apex.configs.strict`      | `error` for all                                       | Every rule enabled as an error |
+| `apex.configs.security`    | `error`                                               | Security rules only            |
+| `apex.configs.performance` | `error`                                               | Performance rules only         |
 
 All configs automatically target `**/*.cls`, `**/*.trigger`, and `**/*.apex` files.
 
@@ -59,10 +57,10 @@ export default [
     languageOptions: apex.configs.recommended.languageOptions,
     rules: {
       'apex/security-no-soql-injection': 'error',
-      'apex/perf-no-dml-in-loop':        'error',
-      'apex/best-test-has-asserts':      'warn',
+      'apex/perf-no-dml-in-loop': 'error',
+      'apex/best-test-has-asserts': 'warn',
       // disable a rule
-      'apex/doc-require-apexdoc':        'off',
+      'apex/doc-require-apexdoc': 'off',
     },
   },
 ];
@@ -72,95 +70,95 @@ export default [
 
 ### Best Practices
 
-| Rule | PMD equivalent | Default |
-|---|---|---|
-| `apex/best-test-has-asserts` | `ApexUnitTestClassShouldHaveAsserts` | error |
-| `apex/best-test-no-see-all-data` | `ApexUnitTestShouldNotUseSeeAllDataTrue` | error |
-| `apex/best-test-has-run-as` | `ApexUnitTestClassShouldHaveRunAs` | off |
-| `apex/best-test-method-annotation` | `ApexUnitTestMethodShouldHaveIsTestAnnotation` | warn |
-| `apex/best-no-global-modifier` | `AvoidGlobalModifier` | warn |
-| `apex/best-no-logic-in-trigger` | `AvoidLogicInTrigger` | warn |
-| `apex/best-debug-use-logging-level` | `DebugsShouldUseLoggingLevel` | warn |
-| `apex/best-no-future-annotation` | `AvoidFutureAnnotation` | warn |
-| `apex/best-queueable-needs-finalizer` | `QueueableShouldAttachFinalizer` | off |
-| `apex/best-no-unused-local-variable` | `UnusedLocalVariable` | off |
-| `apex/best-test-assertions-have-message` | `ApexAssertionsShouldIncludeMessage` | off |
+| Rule                                     | PMD equivalent                                 | Default |
+| ---------------------------------------- | ---------------------------------------------- | ------- |
+| `apex/best-test-has-asserts`             | `ApexUnitTestClassShouldHaveAsserts`           | error   |
+| `apex/best-test-no-see-all-data`         | `ApexUnitTestShouldNotUseSeeAllDataTrue`       | error   |
+| `apex/best-test-has-run-as`              | `ApexUnitTestClassShouldHaveRunAs`             | off     |
+| `apex/best-test-method-annotation`       | `ApexUnitTestMethodShouldHaveIsTestAnnotation` | warn    |
+| `apex/best-no-global-modifier`           | `AvoidGlobalModifier`                          | warn    |
+| `apex/best-no-logic-in-trigger`          | `AvoidLogicInTrigger`                          | warn    |
+| `apex/best-debug-use-logging-level`      | `DebugsShouldUseLoggingLevel`                  | warn    |
+| `apex/best-no-future-annotation`         | `AvoidFutureAnnotation`                        | warn    |
+| `apex/best-queueable-needs-finalizer`    | `QueueableShouldAttachFinalizer`               | off     |
+| `apex/best-no-unused-local-variable`     | `UnusedLocalVariable`                          | off     |
+| `apex/best-test-assertions-have-message` | `ApexAssertionsShouldIncludeMessage`           | off     |
 
 ### Code Style
 
-| Rule | PMD equivalent | Default |
-|---|---|---|
-| `apex/style-naming-conventions` | `FieldNamingConventions` / `MethodNamingConventions` / `ClassNamingConventions` | warn |
-| `apex/style-braces-for-if` | `IfStmtsMustUseBraces` | warn |
-| `apex/style-braces-for-for` | `ForLoopsMustUseBraces` | warn |
-| `apex/style-braces-for-while` | `WhileLoopsMustUseBraces` | warn |
-| `apex/style-fields-at-start` | `FieldDeclarationsShouldBeAtStart` | off |
-| `apex/style-one-declaration-per-line` | `OneDeclarationPerLine` | off |
-| `apex/style-annotation-naming` | `AnnotationNamingConventions` | off |
+| Rule                                  | PMD equivalent                                                                  | Default |
+| ------------------------------------- | ------------------------------------------------------------------------------- | ------- |
+| `apex/style-naming-conventions`       | `FieldNamingConventions` / `MethodNamingConventions` / `ClassNamingConventions` | warn    |
+| `apex/style-braces-for-if`            | `IfStmtsMustUseBraces`                                                          | warn    |
+| `apex/style-braces-for-for`           | `ForLoopsMustUseBraces`                                                         | warn    |
+| `apex/style-braces-for-while`         | `WhileLoopsMustUseBraces`                                                       | warn    |
+| `apex/style-fields-at-start`          | `FieldDeclarationsShouldBeAtStart`                                              | off     |
+| `apex/style-one-declaration-per-line` | `OneDeclarationPerLine`                                                         | off     |
+| `apex/style-annotation-naming`        | `AnnotationNamingConventions`                                                   | off     |
 
 ### Design
 
-| Rule | PMD equivalent | Default |
-|---|---|---|
-| `apex/design-cyclomatic-complexity` | `CyclomaticComplexity` | warn |
-| `apex/design-cognitive-complexity` | `CognitiveComplexity` | off |
-| `apex/design-no-deep-nesting` | `TooDeepNesting` | warn |
-| `apex/design-excessive-parameters` | `ExcessiveParameterList` | warn |
-| `apex/design-excessive-public-count` | `ExcessivePublicCount` | off |
-| `apex/design-too-many-fields` | `TooManyFields` | off |
-| `apex/design-no-boolean-parameters` | `AvoidBooleanParameters` | off |
-| `apex/design-ncss-method-count` | `NcssMethodCount` | off |
-| `apex/design-no-unused-method` | `UnusedMethod` | off |
+| Rule                                 | PMD equivalent           | Default |
+| ------------------------------------ | ------------------------ | ------- |
+| `apex/design-cyclomatic-complexity`  | `CyclomaticComplexity`   | warn    |
+| `apex/design-cognitive-complexity`   | `CognitiveComplexity`    | off     |
+| `apex/design-no-deep-nesting`        | `TooDeepNesting`         | warn    |
+| `apex/design-excessive-parameters`   | `ExcessiveParameterList` | warn    |
+| `apex/design-excessive-public-count` | `ExcessivePublicCount`   | off     |
+| `apex/design-too-many-fields`        | `TooManyFields`          | off     |
+| `apex/design-no-boolean-parameters`  | `AvoidBooleanParameters` | off     |
+| `apex/design-ncss-method-count`      | `NcssMethodCount`        | off     |
+| `apex/design-no-unused-method`       | `UnusedMethod`           | off     |
 
 ### Documentation
 
-| Rule | PMD equivalent | Default |
-|---|---|---|
-| `apex/doc-require-apexdoc` | `ApexDoc` | off |
+| Rule                       | PMD equivalent | Default |
+| -------------------------- | -------------- | ------- |
+| `apex/doc-require-apexdoc` | `ApexDoc`      | off     |
 
 ### Error Prone
 
-| Rule | PMD equivalent | Default |
-|---|---|---|
-| `apex/error-no-empty-catch` | `EmptyCatchBlock` | error |
-| `apex/error-no-empty-if` | `EmptyIfStmt` | error |
-| `apex/error-no-empty-while` | `EmptyWhileStmt` | error |
-| `apex/error-no-empty-try` | `EmptyTryOrFinallyBlock` | error |
-| `apex/error-no-csrf-in-constructor` | `ApexCSRF` | error |
-| `apex/error-no-hardcoded-id` | `AvoidHardcodedId` | error |
-| `apex/error-no-direct-trigger-map-access` | `AvoidDirectTriggerMapAccess` | error |
-| `apex/error-no-nonexistent-annotation` | `NonExistentCustomSettingOrMetadata` | error |
-| `apex/error-no-stateful-db-result` | `AvoidStatefulDbResultInBatch` | off |
-| `apex/error-aura-enabled-getter-public` | `AuraEnabledWithoutCatchBlock` | error |
-| `apex/error-no-method-name-as-class` | `MethodWithSameNameAsEnclosingClass` | error |
-| `apex/error-override-both-equals-hashcode` | `OverrideBothEqualsAndHashcode` | warn |
-| `apex/error-test-methods-in-test-class` | `TestMethodsMustBeInTestClasses` | warn |
-| `apex/error-no-type-shadow-namespace` | `AvoidShadowingField` | off |
+| Rule                                       | PMD equivalent                       | Default |
+| ------------------------------------------ | ------------------------------------ | ------- |
+| `apex/error-no-empty-catch`                | `EmptyCatchBlock`                    | error   |
+| `apex/error-no-empty-if`                   | `EmptyIfStmt`                        | error   |
+| `apex/error-no-empty-while`                | `EmptyWhileStmt`                     | error   |
+| `apex/error-no-empty-try`                  | `EmptyTryOrFinallyBlock`             | error   |
+| `apex/error-no-csrf-in-constructor`        | `ApexCSRF`                           | error   |
+| `apex/error-no-hardcoded-id`               | `AvoidHardcodedId`                   | error   |
+| `apex/error-no-direct-trigger-map-access`  | `AvoidDirectTriggerMapAccess`        | error   |
+| `apex/error-no-nonexistent-annotation`     | `NonExistentCustomSettingOrMetadata` | error   |
+| `apex/error-no-stateful-db-result`         | `AvoidStatefulDbResultInBatch`       | off     |
+| `apex/error-aura-enabled-getter-public`    | `AuraEnabledWithoutCatchBlock`       | error   |
+| `apex/error-no-method-name-as-class`       | `MethodWithSameNameAsEnclosingClass` | error   |
+| `apex/error-override-both-equals-hashcode` | `OverrideBothEqualsAndHashcode`      | warn    |
+| `apex/error-test-methods-in-test-class`    | `TestMethodsMustBeInTestClasses`     | warn    |
+| `apex/error-no-type-shadow-namespace`      | `AvoidShadowingField`                | off     |
 
 ### Performance
 
-| Rule | PMD equivalent | Default |
-|---|---|---|
-| `apex/perf-no-dml-in-loop` | `AvoidDmlStatementsInLoops` | error |
-| `apex/perf-no-debug-statements` | `AvoidDebugStatements` | off |
-| `apex/perf-no-non-restrictive-query` | `WherelessSOQLQuery` | error |
-| `apex/perf-no-eager-describe` | `AvoidLazyDescribeSetting` | off |
-| `apex/perf-no-high-cost-in-loop` | `AvoidSoqlInLoops` | error |
+| Rule                                 | PMD equivalent              | Default |
+| ------------------------------------ | --------------------------- | ------- |
+| `apex/perf-no-dml-in-loop`           | `AvoidDmlStatementsInLoops` | error   |
+| `apex/perf-no-debug-statements`      | `AvoidDebugStatements`      | off     |
+| `apex/perf-no-non-restrictive-query` | `WherelessSOQLQuery`        | error   |
+| `apex/perf-no-eager-describe`        | `AvoidLazyDescribeSetting`  | off     |
+| `apex/perf-no-high-cost-in-loop`     | `AvoidSoqlInLoops`          | error   |
 
 ### Security
 
-| Rule | PMD equivalent | Default |
-|---|---|---|
-| `apex/security-no-hardcoded-crypto` | `ApexBadCrypto` | error |
-| `apex/security-crud-violation` | `ApexCRUDViolation` | error |
-| `apex/security-no-dangerous-methods` | `ApexDangerousMethods` | error |
-| `apex/security-no-insecure-endpoint` | `ApexInsecureEndpoint` | error |
-| `apex/security-no-open-redirect` | `ApexOpenRedirect` | error |
-| `apex/security-sharing-violations` | `ApexSharingViolations` | error |
-| `apex/security-no-soql-injection` | `ApexSOQLInjection` | error |
-| `apex/security-use-named-credentials` | `ApexSuggestUsingNamedCredential` | warn |
-| `apex/security-no-xss-false-escape` | `ApexXSSFromEscapeFalse` | error |
-| `apex/security-no-xss-from-url` | `ApexXSSFromURLParam` | error |
+| Rule                                  | PMD equivalent                    | Default |
+| ------------------------------------- | --------------------------------- | ------- |
+| `apex/security-no-hardcoded-crypto`   | `ApexBadCrypto`                   | error   |
+| `apex/security-crud-violation`        | `ApexCRUDViolation`               | error   |
+| `apex/security-no-dangerous-methods`  | `ApexDangerousMethods`            | error   |
+| `apex/security-no-insecure-endpoint`  | `ApexInsecureEndpoint`            | error   |
+| `apex/security-no-open-redirect`      | `ApexOpenRedirect`                | error   |
+| `apex/security-sharing-violations`    | `ApexSharingViolations`           | error   |
+| `apex/security-no-soql-injection`     | `ApexSOQLInjection`               | error   |
+| `apex/security-use-named-credentials` | `ApexSuggestUsingNamedCredential` | warn    |
+| `apex/security-no-xss-false-escape`   | `ApexXSSFromEscapeFalse`          | error   |
+| `apex/security-no-xss-from-url`       | `ApexXSSFromURLParam`             | error   |
 
 ## PMD Converter
 
@@ -200,6 +198,7 @@ The parser uses [`@apexdevtools/apex-parser`](https://github.com/apex-dev-tools/
 ## Contributing
 
 Contributions welcome — especially:
+
 - Improved AST coverage for edge-case Apex constructs
 - More comprehensive rule implementations
 - Additional test cases

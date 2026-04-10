@@ -11,7 +11,8 @@ export default {
     meta: {
         type: 'suggestion',
         docs: {
-            description: 'Prefer Queueable over @Future — the future annotation has significant limitations',
+            description:
+                'Prefer Queueable over @Future — the future annotation has significant limitations',
             recommended: false,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_bestpractices.html#avoidfutureannotation',
         },
@@ -25,9 +26,11 @@ export default {
     create(context) {
         return {
             ApexMethodDeclaration(node) {
-                if (!node.modifiers) return;
+                if (!node.modifiers) {
+                    return;
+                }
                 const hasFuture = node.modifiers.some(
-                    (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'future'
+                    (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'future',
                 );
                 if (hasFuture) {
                     context.report({

@@ -176,6 +176,7 @@ const FILES = ['**/*.cls', '**/*.trigger', '**/*.apex'];
 
 /**
  * Build rule severities for a config.
+ *
  * @param {'recommended'|'strict'|'security'|'performance'} profile
  */
 function buildRules(profile) {
@@ -187,11 +188,15 @@ function buildRules(profile) {
             continue;
         }
         if (profile === 'security') {
-            if (key.startsWith('security-')) result[`apex/${key}`] = 'error';
+            if (key.startsWith('security-')) {
+                result[`apex/${key}`] = 'error';
+            }
             continue;
         }
         if (profile === 'performance') {
-            if (key.startsWith('perf-')) result[`apex/${key}`] = 'error';
+            if (key.startsWith('perf-')) {
+                result[`apex/${key}`] = 'error';
+            }
             continue;
         }
         // recommended: use the rule's recommended flag and type

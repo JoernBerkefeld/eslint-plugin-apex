@@ -16,7 +16,7 @@ export default {
         },
         messages: {
             openRedirect:
-                "PageReference constructed from a non-literal value may be user-controlled. Validate redirect targets to prevent open redirect vulnerabilities.",
+                'PageReference constructed from a non-literal value may be user-controlled. Validate redirect targets to prevent open redirect vulnerabilities.',
         },
         schema: [],
     },
@@ -24,13 +24,21 @@ export default {
     create(context) {
         return {
             ApexNewExpression(node) {
-                if ((node.className || '').toLowerCase() !== 'pagereference') return;
+                if ((node.className || '').toLowerCase() !== 'pagereference') {
+                    return;
+                }
                 // Allow if argument is a string literal
                 const args = node.arguments || [];
-                if (args.length === 0) return;
+                if (args.length === 0) {
+                    return;
+                }
                 const firstArg = args[0];
-                if (!firstArg) return;
-                if (firstArg.type === 'ApexLiteralExpression') return;
+                if (!firstArg) {
+                    return;
+                }
+                if (firstArg.type === 'ApexLiteralExpression') {
+                    return;
+                }
                 context.report({ node, messageId: 'openRedirect' });
             },
         };

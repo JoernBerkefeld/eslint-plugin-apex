@@ -17,7 +17,9 @@ const DESCRIBE_PATTERNS = [
 ];
 
 function isDescribeCall(rawCallee) {
-    if (!rawCallee) return false;
+    if (!rawCallee) {
+        return false;
+    }
     return DESCRIBE_PATTERNS.some((p) => p.test(rawCallee));
 }
 
@@ -32,7 +34,8 @@ export default {
     meta: {
         type: 'problem',
         docs: {
-            description: 'Avoid calling Schema.describe*() methods inside loops — cache results instead',
+            description:
+                'Avoid calling Schema.describe*() methods inside loops — cache results instead',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_performance.html#avoideagerdescribes',
         },
@@ -48,13 +51,21 @@ export default {
         const listeners = {};
 
         for (const t of LOOP_TYPES) {
-            listeners[t] = () => { loopDepth++; };
-            listeners[`${t}:exit`] = () => { loopDepth--; };
+            listeners[t] = () => {
+                loopDepth++;
+            };
+            listeners[`${t}:exit`] = () => {
+                loopDepth--;
+            };
         }
 
         listeners.ApexMethodCallExpression = function (node) {
             if (loopDepth > 0 && isDescribeCall(node.rawCallee)) {
-                context.report({ node, messageId: 'eagerDescribe', data: { callee: node.rawCallee } });
+                context.report({
+                    node,
+                    messageId: 'eagerDescribe',
+                    data: { callee: node.rawCallee },
+                });
             }
         };
 

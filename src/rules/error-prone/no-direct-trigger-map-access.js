@@ -11,7 +11,8 @@ export default {
     meta: {
         type: 'problem',
         docs: {
-            description: 'Avoid direct index access to Trigger.new or Trigger.old — iterate instead',
+            description:
+                'Avoid direct index access to Trigger.new or Trigger.old — iterate instead',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_errorprone.html#avoiddirectaccesstriggermap',
         },
@@ -26,7 +27,9 @@ export default {
         return {
             ApexArrayExpression(node) {
                 const obj = node.object;
-                if (!obj) return;
+                if (!obj) {
+                    return;
+                }
                 // Check for Trigger.new[n] or Trigger.old[n]
                 const name = (obj.rawName || obj.name || '').toLowerCase();
                 if (name === 'trigger.new' || name === 'trigger.old') {

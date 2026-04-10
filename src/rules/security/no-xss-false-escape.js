@@ -17,7 +17,7 @@ export default {
         },
         messages: {
             xssFalseEscape:
-                "Setting escape to false can introduce XSS vulnerabilities. Use the default HTML-escaped output.",
+                'Setting escape to false can introduce XSS vulnerabilities. Use the default HTML-escaped output.',
         },
         schema: [],
     },

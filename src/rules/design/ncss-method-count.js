@@ -8,54 +8,77 @@
  */
 
 function countNcss(stmts) {
-    if (!stmts) return 0;
+    if (!stmts) {
+        return 0;
+    }
     let count = 0;
     const list = Array.isArray(stmts) ? stmts : stmts.body || [];
 
     for (const stmt of list) {
-        if (!stmt) continue;
+        if (!stmt) {
+            continue;
+        }
         // Count most statement types as 1 NCSS each
-        if (
-            stmt.type === 'ApexLocalVariableDeclaration' ||
-            stmt.type === 'ApexExpressionStatement' ||
-            stmt.type === 'ApexReturnStatement' ||
-            stmt.type === 'ApexThrowStatement' ||
-            stmt.type === 'ApexBreakStatement' ||
-            stmt.type === 'ApexContinueStatement' ||
-            stmt.type === 'ApexInsertStatement' ||
-            stmt.type === 'ApexUpdateStatement' ||
-            stmt.type === 'ApexDeleteStatement' ||
-            stmt.type === 'ApexUndeleteStatement' ||
-            stmt.type === 'ApexUpsertStatement' ||
-            stmt.type === 'ApexMergeStatement'
-        ) {
-            count += 1;
-        } else if (
-            stmt.type === 'ApexIfStatement' ||
-            stmt.type === 'ApexForStatement' ||
-            stmt.type === 'ApexForEachStatement' ||
-            stmt.type === 'ApexWhileStatement' ||
-            stmt.type === 'ApexDoWhileStatement' ||
-            stmt.type === 'ApexSwitchStatement'
-        ) {
-            count += 1;
-            if (stmt.body) count += countNcss(stmt.body);
-            if (stmt.block) count += countNcss(stmt.block.body || []);
-            if (stmt.consequent) count += countNcss([stmt.consequent]);
-            if (stmt.alternate) count += countNcss([stmt.alternate]);
-            if (stmt.cases) {
-                for (const c of stmt.cases) count += countNcss(c.body ? c.body.body || [] : []);
+        switch (stmt.type) {
+            case 'ApexLocalVariableDeclaration':
+            case 'ApexExpressionStatement':
+            case 'ApexReturnStatement':
+            case 'ApexThrowStatement':
+            case 'ApexBreakStatement':
+            case 'ApexContinueStatement':
+            case 'ApexInsertStatement':
+            case 'ApexUpdateStatement':
+            case 'ApexDeleteStatement':
+            case 'ApexUndeleteStatement':
+            case 'ApexUpsertStatement':
+            case 'ApexMergeStatement': {
+                count += 1;
+
+                break;
             }
-        } else if (stmt.type === 'ApexTryStatement') {
-            count += 1;
-            count += countNcss(stmt.block ? stmt.block.body || [] : []);
-            if (stmt.handlers) {
-                for (const h of stmt.handlers) {
-                    count += 1;
-                    count += countNcss(h.block ? h.block.body || [] : []);
+            case 'ApexIfStatement':
+            case 'ApexForStatement':
+            case 'ApexForEachStatement':
+            case 'ApexWhileStatement':
+            case 'ApexDoWhileStatement':
+            case 'ApexSwitchStatement': {
+                count += 1;
+                if (stmt.body) {
+                    count += countNcss(stmt.body);
                 }
+                if (stmt.block) {
+                    count += countNcss(stmt.block.body || []);
+                }
+                if (stmt.consequent) {
+                    count += countNcss([stmt.consequent]);
+                }
+                if (stmt.alternate) {
+                    count += countNcss([stmt.alternate]);
+                }
+                if (stmt.cases) {
+                    for (const c of stmt.cases) {
+                        count += countNcss(c.body ? c.body.body || [] : []);
+                    }
+                }
+
+                break;
             }
-            if (stmt.finalizer) count += countNcss(stmt.finalizer.block ? stmt.finalizer.block.body || [] : []);
+            case 'ApexTryStatement': {
+                count += 1;
+                count += countNcss(stmt.block ? stmt.block.body || [] : []);
+                if (stmt.handlers) {
+                    for (const h of stmt.handlers) {
+                        count += 1;
+                        count += countNcss(h.block ? h.block.body || [] : []);
+                    }
+                }
+                if (stmt.finalizer) {
+                    count += countNcss(stmt.finalizer.block ? stmt.finalizer.block.body || [] : []);
+                }
+
+                break;
+            }
+            // No default
         }
     }
     return count;
@@ -65,7 +88,8 @@ export default {
     meta: {
         type: 'suggestion',
         docs: {
-            description: 'Limit the number of non-commenting source statements per method and class',
+            description:
+                'Limit the number of non-commenting source statements per method and class',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_design.html#ncsscount',
         },
@@ -94,7 +118,9 @@ export default {
 
         return {
             ApexMethodDeclaration(node) {
-                if (!node.body) return;
+                if (!node.body) {
+                    return;
+                }
                 const count = countNcss(node.body.body || []);
                 if (count > methodThreshold) {
                     context.report({

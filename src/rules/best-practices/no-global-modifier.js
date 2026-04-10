@@ -11,7 +11,8 @@ export default {
     meta: {
         type: 'suggestion',
         docs: {
-            description: "Avoid 'global' class modifier — it permanently locks the public API in managed packages",
+            description:
+                "Avoid 'global' class modifier — it permanently locks the public API in managed packages",
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_bestpractices.html#avoidglobalmodifier',
         },
@@ -24,9 +25,11 @@ export default {
 
     create(context) {
         function checkGlobal(node, name) {
-            if (!node.modifiers) return;
+            if (!node.modifiers) {
+                return;
+            }
             const hasGlobal = node.modifiers.some(
-                (m) => m.type === 'ApexModifierNode' && m.value === 'global'
+                (m) => m.type === 'ApexModifierNode' && m.value === 'global',
             );
             if (hasGlobal) {
                 context.report({ node, messageId: 'globalModifier', data: { name } });

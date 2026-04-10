@@ -17,15 +17,29 @@ const DML_TYPES = new Set([
 ]);
 
 function containsDml(stmts) {
-    if (!stmts) return false;
+    if (!stmts) {
+        return false;
+    }
     const list = Array.isArray(stmts) ? stmts : stmts.body || [];
     for (const stmt of list) {
-        if (!stmt) continue;
-        if (DML_TYPES.has(stmt.type)) return true;
-        if (stmt.body && containsDml(stmt.body)) return true;
-        if (stmt.block && containsDml(stmt.block.body || [])) return true;
-        if (stmt.consequent && containsDml([stmt.consequent])) return true;
-        if (stmt.alternate && containsDml([stmt.alternate])) return true;
+        if (!stmt) {
+            continue;
+        }
+        if (DML_TYPES.has(stmt.type)) {
+            return true;
+        }
+        if (stmt.body && containsDml(stmt.body)) {
+            return true;
+        }
+        if (stmt.block && containsDml(stmt.block.body || [])) {
+            return true;
+        }
+        if (stmt.consequent && containsDml([stmt.consequent])) {
+            return true;
+        }
+        if (stmt.alternate && containsDml([stmt.alternate])) {
+            return true;
+        }
     }
     return false;
 }

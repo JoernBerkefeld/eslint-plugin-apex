@@ -35,8 +35,11 @@ function offsetToLoc(offset, lineStarts) {
     let hi = lineStarts.length - 1;
     while (lo < hi) {
         const mid = (lo + hi + 1) >> 1;
-        if (lineStarts[mid] <= offset) lo = mid;
-        else hi = mid - 1;
+        if (lineStarts[mid] <= offset) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
     }
     return { line: lo + 1, column: offset - lineStarts[lo] };
 }
@@ -44,6 +47,10 @@ function offsetToLoc(offset, lineStarts) {
 /**
  * ANTLR4 tokens carry charPositionInLine (column) and line (1-based).
  * We compute absolute offsets from the source string using a character table.
+ *
+ * @param startToken
+ * @param stopToken
+ * @param lineStarts
  */
 function tokenToRange(startToken, stopToken, lineStarts) {
     const startOffset = lineStarts[startToken.line - 1] + startToken.column;
@@ -78,10 +85,14 @@ function makeNode(type, startToken, stopToken, lineStarts, extras) {
 // ── Modifier helpers ───────────────────────────────────────────────────────
 
 function buildModifiers(modifierList, lineStarts) {
-    if (!modifierList || modifierList.length === 0) return [];
+    if (!modifierList || modifierList.length === 0) {
+        return [];
+    }
     return modifierList.map((mod) => {
         const ann = mod.annotation ? mod.annotation() : null;
-        if (ann) return buildAnnotation(ann, lineStarts);
+        if (ann) {
+            return buildAnnotation(ann, lineStarts);
+        }
         return makeNode(NodeType.ApexModifierNode, mod.start, mod.stop, lineStarts, {
             value: mod.getText().toLowerCase(),
         });
@@ -89,7 +100,11 @@ function buildModifiers(modifierList, lineStarts) {
 }
 
 function buildAnnotation(ann, lineStarts) {
-    const name = ann.qualifiedName ? ann.qualifiedName().getText() : ann.id ? ann.id().getText() : '';
+    const name = ann.qualifiedName
+        ? ann.qualifiedName().getText()
+        : ann.id
+          ? ann.id().getText()
+          : '';
     const elementValuePairs = ann.elementValuePairs ? ann.elementValuePairs() : null;
     const elementValue = ann.elementValue ? ann.elementValue() : null;
     const parameters = [];
@@ -103,15 +118,21 @@ function buildAnnotation(ann, lineStarts) {
                 makeNode(NodeType.ApexAnnotationParameter, pair.start, pair.stop, lineStarts, {
                     name: pair.id().getText(),
                     value: pair.elementValue().getText(),
-                })
+                }),
             );
         }
     } else if (elementValue) {
         parameters.push(
-            makeNode(NodeType.ApexAnnotationParameter, elementValue.start, elementValue.stop, lineStarts, {
-                name: null,
-                value: elementValue.getText(),
-            })
+            makeNode(
+                NodeType.ApexAnnotationParameter,
+                elementValue.start,
+                elementValue.stop,
+                lineStarts,
+                {
+                    name: null,
+                    value: elementValue.getText(),
+                },
+            ),
         );
     }
 
@@ -124,7 +145,9 @@ function buildAnnotation(ann, lineStarts) {
 // ── Type reference ─────────────────────────────────────────────────────────
 
 function buildTypeRef(typeRef, lineStarts) {
-    if (!typeRef) return null;
+    if (!typeRef) {
+        return null;
+    }
     return makeNode(NodeType.ApexTypeRef, typeRef.start, typeRef.stop, lineStarts, {
         name: typeRef.getText(),
     });
@@ -133,23 +156,31 @@ function buildTypeRef(typeRef, lineStarts) {
 // ── Parameters ─────────────────────────────────────────────────────────────
 
 function buildParameters(formalParameters, lineStarts) {
-    if (!formalParameters) return [];
-    const fpl = formalParameters.formalParameterList ? formalParameters.formalParameterList() : null;
-    if (!fpl) return [];
+    if (!formalParameters) {
+        return [];
+    }
+    const fpl = formalParameters.formalParameterList
+        ? formalParameters.formalParameterList()
+        : null;
+    if (!fpl) {
+        return [];
+    }
     const params = fpl.formalParameter_list ? fpl.formalParameter_list() : [];
     return params.map((p) =>
         makeNode(NodeType.ApexParameter, p.start, p.stop, lineStarts, {
             id: { type: 'Identifier', name: p.id().getText() },
             typeRef: buildTypeRef(p.typeRef(), lineStarts),
             modifiers: p.modifier_list ? buildModifiers(p.modifier_list(), lineStarts) : [],
-        })
+        }),
     );
 }
 
 // ── Statements ─────────────────────────────────────────────────────────────
 
 function buildBlock(block, lineStarts) {
-    if (!block) return null;
+    if (!block) {
+        return null;
+    }
     const stmts = block.statement_list ? block.statement_list() : [];
     return makeNode(NodeType.ApexBlockStatement, block.start, block.stop, lineStarts, {
         body: stmts.map((s) => buildStatement(s, lineStarts)).filter(Boolean),
@@ -157,35 +188,80 @@ function buildBlock(block, lineStarts) {
 }
 
 function buildStatement(stmt, lineStarts) {
-    if (!stmt) return null;
+    if (!stmt) {
+        return null;
+    }
 
-    if (stmt.ifStatement && stmt.ifStatement()) return buildIfStatement(stmt.ifStatement(), lineStarts);
-    if (stmt.forStatement && stmt.forStatement()) return buildForStatement(stmt.forStatement(), lineStarts);
-    if (stmt.whileStatement && stmt.whileStatement()) return buildWhileStatement(stmt.whileStatement(), lineStarts);
-    if (stmt.doWhileStatement && stmt.doWhileStatement()) return buildDoWhileStatement(stmt.doWhileStatement(), lineStarts);
-    if (stmt.tryStatement && stmt.tryStatement()) return buildTryStatement(stmt.tryStatement(), lineStarts);
-    if (stmt.returnStatement && stmt.returnStatement()) return buildReturnStatement(stmt.returnStatement(), lineStarts);
-    if (stmt.throwStatement && stmt.throwStatement()) return buildThrowStatement(stmt.throwStatement(), lineStarts);
-    if (stmt.breakStatement && stmt.breakStatement()) return makeNode(NodeType.ApexBreakStatement, stmt.start, stmt.stop, lineStarts, {});
-    if (stmt.continueStatement && stmt.continueStatement()) return makeNode(NodeType.ApexContinueStatement, stmt.start, stmt.stop, lineStarts, {});
-    if (stmt.insertStatement && stmt.insertStatement()) return buildDmlStatement(NodeType.ApexInsertStatement, stmt.insertStatement(), lineStarts);
-    if (stmt.updateStatement && stmt.updateStatement()) return buildDmlStatement(NodeType.ApexUpdateStatement, stmt.updateStatement(), lineStarts);
-    if (stmt.deleteStatement && stmt.deleteStatement()) return buildDmlStatement(NodeType.ApexDeleteStatement, stmt.deleteStatement(), lineStarts);
-    if (stmt.undeleteStatement && stmt.undeleteStatement()) return buildDmlStatement(NodeType.ApexUndeleteStatement, stmt.undeleteStatement(), lineStarts);
-    if (stmt.upsertStatement && stmt.upsertStatement()) return buildDmlStatement(NodeType.ApexUpsertStatement, stmt.upsertStatement(), lineStarts);
-    if (stmt.mergeStatement && stmt.mergeStatement()) return buildDmlStatement(NodeType.ApexMergeStatement, stmt.mergeStatement(), lineStarts);
+    if (stmt.ifStatement && stmt.ifStatement()) {
+        return buildIfStatement(stmt.ifStatement(), lineStarts);
+    }
+    if (stmt.forStatement && stmt.forStatement()) {
+        return buildForStatement(stmt.forStatement(), lineStarts);
+    }
+    if (stmt.whileStatement && stmt.whileStatement()) {
+        return buildWhileStatement(stmt.whileStatement(), lineStarts);
+    }
+    if (stmt.doWhileStatement && stmt.doWhileStatement()) {
+        return buildDoWhileStatement(stmt.doWhileStatement(), lineStarts);
+    }
+    if (stmt.tryStatement && stmt.tryStatement()) {
+        return buildTryStatement(stmt.tryStatement(), lineStarts);
+    }
+    if (stmt.returnStatement && stmt.returnStatement()) {
+        return buildReturnStatement(stmt.returnStatement(), lineStarts);
+    }
+    if (stmt.throwStatement && stmt.throwStatement()) {
+        return buildThrowStatement(stmt.throwStatement(), lineStarts);
+    }
+    if (stmt.breakStatement && stmt.breakStatement()) {
+        return makeNode(NodeType.ApexBreakStatement, stmt.start, stmt.stop, lineStarts, {});
+    }
+    if (stmt.continueStatement && stmt.continueStatement()) {
+        return makeNode(NodeType.ApexContinueStatement, stmt.start, stmt.stop, lineStarts, {});
+    }
+    if (stmt.insertStatement && stmt.insertStatement()) {
+        return buildDmlStatement(NodeType.ApexInsertStatement, stmt.insertStatement(), lineStarts);
+    }
+    if (stmt.updateStatement && stmt.updateStatement()) {
+        return buildDmlStatement(NodeType.ApexUpdateStatement, stmt.updateStatement(), lineStarts);
+    }
+    if (stmt.deleteStatement && stmt.deleteStatement()) {
+        return buildDmlStatement(NodeType.ApexDeleteStatement, stmt.deleteStatement(), lineStarts);
+    }
+    if (stmt.undeleteStatement && stmt.undeleteStatement()) {
+        return buildDmlStatement(
+            NodeType.ApexUndeleteStatement,
+            stmt.undeleteStatement(),
+            lineStarts,
+        );
+    }
+    if (stmt.upsertStatement && stmt.upsertStatement()) {
+        return buildDmlStatement(NodeType.ApexUpsertStatement, stmt.upsertStatement(), lineStarts);
+    }
+    if (stmt.mergeStatement && stmt.mergeStatement()) {
+        return buildDmlStatement(NodeType.ApexMergeStatement, stmt.mergeStatement(), lineStarts);
+    }
     if (stmt.localVariableDeclarationStatement && stmt.localVariableDeclarationStatement()) {
-        return buildLocalVariableDeclaration(stmt.localVariableDeclarationStatement().localVariableDeclaration(), lineStarts);
+        return buildLocalVariableDeclaration(
+            stmt.localVariableDeclarationStatement().localVariableDeclaration(),
+            lineStarts,
+        );
     }
     if (stmt.expressionStatement && stmt.expressionStatement()) {
         return makeNode(NodeType.ApexExpressionStatement, stmt.start, stmt.stop, lineStarts, {
             expression: buildExpression(stmt.expressionStatement().expression(), lineStarts),
         });
     }
-    if (stmt.runAsStatement && stmt.runAsStatement()) return buildRunAsStatement(stmt.runAsStatement(), lineStarts);
-    if (stmt.switchStatement && stmt.switchStatement()) return buildSwitchStatement(stmt.switchStatement(), lineStarts);
+    if (stmt.runAsStatement && stmt.runAsStatement()) {
+        return buildRunAsStatement(stmt.runAsStatement(), lineStarts);
+    }
+    if (stmt.switchStatement && stmt.switchStatement()) {
+        return buildSwitchStatement(stmt.switchStatement(), lineStarts);
+    }
     // Nested block
-    if (stmt.block && stmt.block()) return buildBlock(stmt.block(), lineStarts);
+    if (stmt.block && stmt.block()) {
+        return buildBlock(stmt.block(), lineStarts);
+    }
 
     // Fallback: opaque statement node
     return makeNode(NodeType.ApexExpressionStatement, stmt.start, stmt.stop, lineStarts, {
@@ -208,7 +284,8 @@ function buildIfStatement(ifStmt, lineStarts) {
 
 function buildForStatement(forStmt, lineStarts) {
     const forClauses = forStmt.forClauses ? forStmt.forClauses() : null;
-    const isForEach = forClauses && forClauses.enhancedForControl && forClauses.enhancedForControl();
+    const isForEach =
+        forClauses && forClauses.enhancedForControl && forClauses.enhancedForControl();
     const body = forStmt.statement ? buildStatement(forStmt.statement(), lineStarts) : null;
 
     if (isForEach) {
@@ -247,12 +324,18 @@ function buildTryStatement(tryStmt, lineStarts) {
 
     const handlers = catchClauses.map((cc) =>
         makeNode(NodeType.ApexCatchClause, cc.start, cc.stop, lineStarts, {
-            exceptionType: cc.qualifiedName ? cc.qualifiedName().getText() : cc.typeRef ? cc.typeRef().getText() : null,
+            exceptionType: cc.qualifiedName
+                ? cc.qualifiedName().getText()
+                : cc.typeRef
+                  ? cc.typeRef().getText()
+                  : null,
             param: cc.id ? cc.id().getText() : null,
             block: buildBlock(cc.block(), lineStarts),
             // Whether the catch block is empty (no statements) and contains a comment
-            isEmpty: !cc.block() || (cc.block().statement_list ? cc.block().statement_list().length === 0 : true),
-        })
+            isEmpty:
+                !cc.block() ||
+                (cc.block().statement_list ? cc.block().statement_list().length === 0 : true),
+        }),
     );
 
     const finalizer = finallyBlock
@@ -289,16 +372,19 @@ function buildDmlStatement(type, dml, lineStarts) {
 }
 
 function buildLocalVariableDeclaration(lvd, lineStarts) {
-    if (!lvd) return null;
+    if (!lvd) {
+        return null;
+    }
     const vds = lvd.variableDeclarators ? lvd.variableDeclarators() : null;
-    const declarators = vds && vds.variableDeclarator_list
-        ? vds.variableDeclarator_list().map((vd) =>
-              makeNode(NodeType.ApexVariableDeclarator, vd.start, vd.stop, lineStarts, {
-                  id: { type: 'Identifier', name: vd.id().getText() },
-                  init: vd.expression ? buildExpression(vd.expression(), lineStarts) : null,
-              })
-          )
-        : [];
+    const declarators =
+        vds && vds.variableDeclarator_list
+            ? vds.variableDeclarator_list().map((vd) =>
+                  makeNode(NodeType.ApexVariableDeclarator, vd.start, vd.stop, lineStarts, {
+                      id: { type: 'Identifier', name: vd.id().getText() },
+                      init: vd.expression ? buildExpression(vd.expression(), lineStarts) : null,
+                  }),
+              )
+            : [];
 
     return makeNode(NodeType.ApexLocalVariableDeclaration, lvd.start, lvd.stop, lineStarts, {
         typeRef: buildTypeRef(lvd.typeRef(), lineStarts),
@@ -318,7 +404,7 @@ function buildSwitchStatement(sw, lineStarts) {
         cases: whenClauses.map((wc) =>
             makeNode(NodeType.ApexWhenClause, wc.start, wc.stop, lineStarts, {
                 body: buildBlock(wc.block(), lineStarts),
-            })
+            }),
         ),
     });
 }
@@ -326,13 +412,17 @@ function buildSwitchStatement(sw, lineStarts) {
 // ── Expressions ─────────────────────────────────────────────────────────────
 
 function buildParExpression(parExpr, lineStarts) {
-    if (!parExpr) return null;
+    if (!parExpr) {
+        return null;
+    }
     const expr = parExpr.expression ? parExpr.expression() : null;
     return expr ? buildExpression(expr, lineStarts) : null;
 }
 
 function buildExpression(expr, lineStarts) {
-    if (!expr) return null;
+    if (!expr) {
+        return null;
+    }
 
     const name = expr.constructor.name;
 
@@ -343,9 +433,13 @@ function buildExpression(expr, lineStarts) {
             // MethodCallContext uses expressionList() directly (no arguments() wrapper)
             const exprList = methodCall.expressionList ? methodCall.expressionList() : null;
             const argList = exprList && exprList.expression_list ? exprList.expression_list() : [];
-            const calleeName = methodCall.id ? methodCall.id().getText() :
-                               methodCall.THIS ? 'this' :
-                               methodCall.SUPER ? 'super' : '';
+            const calleeName = methodCall.id
+                ? methodCall.id().getText()
+                : methodCall.THIS
+                  ? 'this'
+                  : methodCall.SUPER
+                    ? 'super'
+                    : '';
             return makeNode(NodeType.ApexMethodCallExpression, expr.start, expr.stop, lineStarts, {
                 callee: { type: 'Identifier', name: calleeName },
                 arguments: argList.map((a) => buildExpression(a, lineStarts)).filter(Boolean),
@@ -364,9 +458,12 @@ function buildExpression(expr, lineStarts) {
             // DotMethodCallContext uses expressionList() directly (no intermediate arguments() wrapper)
             const exprList = dotMethod.expressionList ? dotMethod.expressionList() : null;
             const argList = exprList && exprList.expression_list ? exprList.expression_list() : [];
-            const methodName = dotMethod.anyId ? dotMethod.anyId().getText() :
-                               dotMethod.id ? dotMethod.id().getText() : '';
-            const objName = obj ? (obj.rawName || obj.name || '') : '';
+            const methodName = dotMethod.anyId
+                ? dotMethod.anyId().getText()
+                : dotMethod.id
+                  ? dotMethod.id().getText()
+                  : '';
+            const objName = obj ? obj.rawName || obj.name || '' : '';
             return makeNode(NodeType.ApexMethodCallExpression, expr.start, expr.stop, lineStarts, {
                 callee: makeNode(NodeType.ApexDotExpression, expr.start, expr.stop, lineStarts, {
                     object: obj,
@@ -391,8 +488,12 @@ function buildExpression(expr, lineStarts) {
     // Array access: arr[i]
     if (name === 'ArrayExpressionContext') {
         return makeNode(NodeType.ApexArrayExpression, expr.start, expr.stop, lineStarts, {
-            object: expr.expression_list ? buildExpression(expr.expression_list()[0], lineStarts) : null,
-            index: expr.expression_list ? buildExpression(expr.expression_list()[1], lineStarts) : null,
+            object: expr.expression_list
+                ? buildExpression(expr.expression_list()[0], lineStarts)
+                : null,
+            index: expr.expression_list
+                ? buildExpression(expr.expression_list()[1], lineStarts)
+                : null,
         });
     }
 
@@ -416,8 +517,10 @@ function buildExpression(expr, lineStarts) {
             const ccr = creator.classCreatorRest ? creator.classCreatorRest() : null;
             if (ccr) {
                 const argsCtx = ccr.arguments ? ccr.arguments() : null;
-                const exprList = argsCtx && argsCtx.expressionList ? argsCtx.expressionList() : null;
-                const rawArgs = exprList && exprList.expression_list ? exprList.expression_list() : [];
+                const exprList =
+                    argsCtx && argsCtx.expressionList ? argsCtx.expressionList() : null;
+                const rawArgs =
+                    exprList && exprList.expression_list ? exprList.expression_list() : [];
                 ctorArgs = rawArgs.map((a) => buildExpression(a, lineStarts)).filter(Boolean);
             }
         }
@@ -458,7 +561,15 @@ function buildExpression(expr, lineStarts) {
         const exprs = expr.expression_list ? expr.expression_list() : [];
         return makeNode(NodeType.ApexBinaryExpression, expr.start, expr.stop, lineStarts, {
             left: exprs[0] ? buildExpression(exprs[0], lineStarts) : null,
-            operator: exprs.length === 2 ? expr.getText().slice(exprs[0].getText().length, expr.getText().length - exprs[1].getText().length) : null,
+            operator:
+                exprs.length === 2
+                    ? expr
+                          .getText()
+                          .slice(
+                              exprs[0].getText().length,
+                              expr.getText().length - exprs[1].getText().length,
+                          )
+                    : null,
             right: exprs[1] ? buildExpression(exprs[1], lineStarts) : null,
         });
     }
@@ -488,7 +599,9 @@ function buildExpression(expr, lineStarts) {
     // Primary expressions
     if (name === 'PrimaryExpressionContext') {
         const primary = expr.primary ? expr.primary() : null;
-        if (primary) return buildPrimary(primary, lineStarts);
+        if (primary) {
+            return buildPrimary(primary, lineStarts);
+        }
     }
 
     // Sub-expression: (expr)
@@ -566,66 +679,103 @@ function buildPrimary(primary, lineStarts) {
 // ── Class member builders ──────────────────────────────────────────────────
 
 function buildMethodDeclaration(classBodyDecl, lineStarts) {
-    const modifiers = buildModifiers(classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [], lineStarts);
+    const modifiers = buildModifiers(
+        classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [],
+        lineStarts,
+    );
     const member = classBodyDecl.memberDeclaration();
     const md = member.methodDeclaration();
 
-    return makeNode(NodeType.ApexMethodDeclaration, classBodyDecl.start, classBodyDecl.stop, lineStarts, {
-        modifiers,
-        id: { type: 'Identifier', name: md.id().getText() },
-        returnType: (md.typeRef && md.typeRef()) ? md.typeRef().getText() : 'void',
-        parameters: buildParameters(md.formalParameters(), lineStarts),
-        body: md.block ? buildBlock(md.block(), lineStarts) : null,
-        isAbstract: !md.block || !md.block(),
-    });
+    return makeNode(
+        NodeType.ApexMethodDeclaration,
+        classBodyDecl.start,
+        classBodyDecl.stop,
+        lineStarts,
+        {
+            modifiers,
+            id: { type: 'Identifier', name: md.id().getText() },
+            returnType: md.typeRef && md.typeRef() ? md.typeRef().getText() : 'void',
+            parameters: buildParameters(md.formalParameters(), lineStarts),
+            body: md.block ? buildBlock(md.block(), lineStarts) : null,
+            isAbstract: !md.block || !md.block(),
+        },
+    );
 }
 
 function buildConstructorDeclaration(classBodyDecl, lineStarts) {
-    const modifiers = buildModifiers(classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [], lineStarts);
+    const modifiers = buildModifiers(
+        classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [],
+        lineStarts,
+    );
     const member = classBodyDecl.memberDeclaration();
     const cd = member.constructorDeclaration();
 
-    return makeNode(NodeType.ApexConstructorDeclaration, classBodyDecl.start, classBodyDecl.stop, lineStarts, {
-        modifiers,
-        id: { type: 'Identifier', name: cd.qualifiedName ? cd.qualifiedName().getText() : '' },
-        parameters: buildParameters(cd.formalParameters(), lineStarts),
-        body: buildBlock(cd.block(), lineStarts),
-    });
+    return makeNode(
+        NodeType.ApexConstructorDeclaration,
+        classBodyDecl.start,
+        classBodyDecl.stop,
+        lineStarts,
+        {
+            modifiers,
+            id: { type: 'Identifier', name: cd.qualifiedName ? cd.qualifiedName().getText() : '' },
+            parameters: buildParameters(cd.formalParameters(), lineStarts),
+            body: buildBlock(cd.block(), lineStarts),
+        },
+    );
 }
 
 function buildFieldDeclaration(classBodyDecl, lineStarts) {
-    const modifiers = buildModifiers(classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [], lineStarts);
+    const modifiers = buildModifiers(
+        classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [],
+        lineStarts,
+    );
     const member = classBodyDecl.memberDeclaration();
     const fd = member.fieldDeclaration();
     const vds = fd.variableDeclarators ? fd.variableDeclarators() : null;
-    const declarators = vds && vds.variableDeclarator_list
-        ? vds.variableDeclarator_list().map((vd) =>
-              makeNode(NodeType.ApexVariableDeclarator, vd.start, vd.stop, lineStarts, {
-                  id: { type: 'Identifier', name: vd.id().getText() },
-                  init: vd.expression ? buildExpression(vd.expression(), lineStarts) : null,
-              })
-          )
-        : [];
+    const declarators =
+        vds && vds.variableDeclarator_list
+            ? vds.variableDeclarator_list().map((vd) =>
+                  makeNode(NodeType.ApexVariableDeclarator, vd.start, vd.stop, lineStarts, {
+                      id: { type: 'Identifier', name: vd.id().getText() },
+                      init: vd.expression ? buildExpression(vd.expression(), lineStarts) : null,
+                  }),
+              )
+            : [];
 
-    return makeNode(NodeType.ApexFieldDeclaration, classBodyDecl.start, classBodyDecl.stop, lineStarts, {
-        modifiers,
-        typeRef: buildTypeRef(fd.typeRef(), lineStarts),
-        declarators,
-    });
+    return makeNode(
+        NodeType.ApexFieldDeclaration,
+        classBodyDecl.start,
+        classBodyDecl.stop,
+        lineStarts,
+        {
+            modifiers,
+            typeRef: buildTypeRef(fd.typeRef(), lineStarts),
+            declarators,
+        },
+    );
 }
 
 function buildPropertyDeclaration(classBodyDecl, lineStarts) {
-    const modifiers = buildModifiers(classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [], lineStarts);
+    const modifiers = buildModifiers(
+        classBodyDecl.modifier_list ? classBodyDecl.modifier_list() : [],
+        lineStarts,
+    );
     const member = classBodyDecl.memberDeclaration();
     const pd = member.propertyDeclaration();
 
-    return makeNode(NodeType.ApexPropertyDeclaration, classBodyDecl.start, classBodyDecl.stop, lineStarts, {
-        modifiers,
-        id: { type: 'Identifier', name: pd.id ? pd.id().getText() : '' },
-        typeRef: buildTypeRef(pd.typeRef ? pd.typeRef() : null, lineStarts),
-        getterModifiers: [],
-        setterModifiers: [],
-    });
+    return makeNode(
+        NodeType.ApexPropertyDeclaration,
+        classBodyDecl.start,
+        classBodyDecl.stop,
+        lineStarts,
+        {
+            modifiers,
+            id: { type: 'Identifier', name: pd.id ? pd.id().getText() : '' },
+            typeRef: buildTypeRef(pd.typeRef ? pd.typeRef() : null, lineStarts),
+            getterModifiers: [],
+            setterModifiers: [],
+        },
+    );
 }
 
 function buildClassBodyMembers(classBody, lineStarts) {
@@ -634,7 +784,9 @@ function buildClassBodyMembers(classBody, lineStarts) {
 
     for (const decl of decls) {
         const member = decl.memberDeclaration ? decl.memberDeclaration() : null;
-        if (!member) continue;
+        if (!member) {
+            continue;
+        }
 
         if (member.methodDeclaration && member.methodDeclaration()) {
             body.push(buildMethodDeclaration(decl, lineStarts));
@@ -647,10 +799,14 @@ function buildClassBodyMembers(classBody, lineStarts) {
         } else if (member.classDeclaration && member.classDeclaration()) {
             // Nested class
             const nestedClass = buildClassDeclaration(decl, lineStarts);
-            if (nestedClass) body.push(nestedClass);
+            if (nestedClass) {
+                body.push(nestedClass);
+            }
         } else if (member.enumDeclaration && member.enumDeclaration()) {
             const nestedEnum = buildEnumDeclaration(decl, lineStarts);
-            if (nestedEnum) body.push(nestedEnum);
+            if (nestedEnum) {
+                body.push(nestedEnum);
+            }
         }
     }
 
@@ -661,7 +817,10 @@ function buildClassBodyMembers(classBody, lineStarts) {
 
 function buildClassDeclaration(typeDecl, lineStarts) {
     // typeDecl is either TypeDeclarationContext (top-level) or ClassBodyDeclarationContext (nested)
-    const modifiers = buildModifiers(typeDecl.modifier_list ? typeDecl.modifier_list() : [], lineStarts);
+    const modifiers = buildModifiers(
+        typeDecl.modifier_list ? typeDecl.modifier_list() : [],
+        lineStarts,
+    );
     // Try direct classDeclaration() first, then via memberDeclaration()
     let cd = null;
     if (typeDecl.classDeclaration && typeDecl.classDeclaration()) {
@@ -670,7 +829,9 @@ function buildClassDeclaration(typeDecl, lineStarts) {
         const mem = typeDecl.memberDeclaration();
         cd = mem.classDeclaration && mem.classDeclaration() ? mem.classDeclaration() : null;
     }
-    if (!cd) return null;
+    if (!cd) {
+        return null;
+    }
 
     const superClass = cd.typeRef ? cd.typeRef() : null;
     const interfaces = cd.typeList ? cd.typeList() : null;
@@ -688,22 +849,30 @@ function buildClassDeclaration(typeDecl, lineStarts) {
 }
 
 function buildInterfaceDeclaration(typeDecl, lineStarts) {
-    const modifiers = buildModifiers(typeDecl.modifier_list ? typeDecl.modifier_list() : [], lineStarts);
+    const modifiers = buildModifiers(
+        typeDecl.modifier_list ? typeDecl.modifier_list() : [],
+        lineStarts,
+    );
     // Try direct interfaceDeclaration() first
     let iface = null;
     if (typeDecl.interfaceDeclaration && typeDecl.interfaceDeclaration()) {
         iface = typeDecl.interfaceDeclaration();
     } else if (typeDecl.memberDeclaration && typeDecl.memberDeclaration()) {
         const mem = typeDecl.memberDeclaration();
-        iface = mem.interfaceDeclaration && mem.interfaceDeclaration() ? mem.interfaceDeclaration() : null;
+        iface =
+            mem.interfaceDeclaration && mem.interfaceDeclaration()
+                ? mem.interfaceDeclaration()
+                : null;
     }
-    if (!iface) return null;
+    if (!iface) {
+        return null;
+    }
 
     const interfaceBody = iface.interfaceBody ? iface.interfaceBody() : null;
     const methodDecls = interfaceBody
-        ? (interfaceBody.interfaceMethodDeclaration_list
-              ? interfaceBody.interfaceMethodDeclaration_list()
-              : [])
+        ? interfaceBody.interfaceMethodDeclaration_list
+            ? interfaceBody.interfaceMethodDeclaration_list()
+            : []
         : [];
 
     return makeNode(NodeType.ApexInterfaceDeclaration, typeDecl.start, typeDecl.stop, lineStarts, {
@@ -714,16 +883,22 @@ function buildInterfaceDeclaration(typeDecl, lineStarts) {
                 modifiers: buildModifiers(m.modifier_list ? m.modifier_list() : [], lineStarts),
                 id: { type: 'Identifier', name: m.id ? m.id().getText() : '' },
                 returnType: m.typeRef ? m.typeRef().getText() : 'void',
-                parameters: buildParameters(m.formalParameters ? m.formalParameters() : null, lineStarts),
+                parameters: buildParameters(
+                    m.formalParameters ? m.formalParameters() : null,
+                    lineStarts,
+                ),
                 body: null,
                 isAbstract: true,
-            })
+            }),
         ),
     });
 }
 
 function buildEnumDeclaration(typeDecl, lineStarts) {
-    const modifiers = buildModifiers(typeDecl.modifier_list ? typeDecl.modifier_list() : [], lineStarts);
+    const modifiers = buildModifiers(
+        typeDecl.modifier_list ? typeDecl.modifier_list() : [],
+        lineStarts,
+    );
     // Try direct enumDeclaration() first
     let ed = null;
     if (typeDecl.enumDeclaration && typeDecl.enumDeclaration()) {
@@ -732,7 +907,9 @@ function buildEnumDeclaration(typeDecl, lineStarts) {
         const mem = typeDecl.memberDeclaration();
         ed = mem.enumDeclaration && mem.enumDeclaration() ? mem.enumDeclaration() : null;
     }
-    if (!ed) return null;
+    if (!ed) {
+        return null;
+    }
 
     const constants = ed.enumConstants ? ed.enumConstants() : null;
     const constList = constants && constants.id_list ? constants.id_list() : [];
@@ -743,7 +920,7 @@ function buildEnumDeclaration(typeDecl, lineStarts) {
         constants: constList.map((c) =>
             makeNode(NodeType.ApexEnumConstant, c.start, c.stop, lineStarts, {
                 name: c.getText(),
-            })
+            }),
         ),
     });
 }
@@ -760,21 +937,30 @@ function buildTriggerDeclaration(triggerUnit, lineStarts) {
     const body = [];
     for (const m of members) {
         const stmt = m.statement ? m.statement() : null;
-        if (stmt) body.push(buildStatement(stmt, lineStarts));
+        if (stmt) {
+            body.push(buildStatement(stmt, lineStarts));
+        }
     }
 
-    return makeNode(NodeType.ApexTriggerDeclaration, triggerUnit.start, triggerUnit.stop, lineStarts, {
-        id: { type: 'Identifier', name: triggerName },
-        object: objectName,
-        events: cases.map((c) => c.getText()),
-        body,
-    });
+    return makeNode(
+        NodeType.ApexTriggerDeclaration,
+        triggerUnit.start,
+        triggerUnit.stop,
+        lineStarts,
+        {
+            id: { type: 'Identifier', name: triggerName },
+            object: objectName,
+            events: cases.map((c) => c.getText()),
+            body,
+        },
+    );
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
 /**
  * Build an ESLint-compatible AST from a CompilationUnitContext (class file).
+ *
  * @param {CompilationUnitContext} tree - root parse tree
  * @param {string} source - original source code
  * @returns {{ ast: object, lineStarts: number[] }}
@@ -793,13 +979,19 @@ export function buildFromCompilationUnit(tree, source) {
 
         if (cls) {
             const node = buildClassDeclaration(td, lineStarts);
-            if (node) body.push(node);
+            if (node) {
+                body.push(node);
+            }
         } else if (iface) {
             const node = buildInterfaceDeclaration(td, lineStarts);
-            if (node) body.push(node);
+            if (node) {
+                body.push(node);
+            }
         } else if (enm) {
             const node = buildEnumDeclaration(td, lineStarts);
-            if (node) body.push(node);
+            if (node) {
+                body.push(node);
+            }
         }
     }
 
@@ -820,6 +1012,7 @@ export function buildFromCompilationUnit(tree, source) {
 
 /**
  * Build an ESLint-compatible AST from a TriggerUnitContext.
+ *
  * @param {TriggerUnitContext} tree - root parse tree
  * @param {string} source - original source code
  * @returns {{ ast: object, lineStarts: number[] }}
@@ -845,6 +1038,7 @@ export function buildFromTriggerUnit(tree, source) {
 
 /**
  * Build an ESLint-compatible AST from an AnonymousUnitContext (anonymous Apex).
+ *
  * @param {AnonymousUnitContext} tree - root parse tree
  * @param {string} source - original source code
  * @returns {{ ast: object, lineStarts: number[] }}
@@ -859,10 +1053,14 @@ export function buildFromAnonymousUnit(tree, source) {
         const lvd = m.localVariableDeclaration ? m.localVariableDeclaration() : null;
         if (stmt) {
             const node = buildStatement(stmt, lineStarts);
-            if (node) body.push(node);
+            if (node) {
+                body.push(node);
+            }
         } else if (lvd) {
             const node = buildLocalVariableDeclaration(lvd, lineStarts);
-            if (node) body.push(node);
+            if (node) {
+                body.push(node);
+            }
         }
     }
 

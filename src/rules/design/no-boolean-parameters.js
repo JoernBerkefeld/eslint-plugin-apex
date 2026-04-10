@@ -31,7 +31,9 @@ export default {
     create(context) {
         return {
             ApexMethodDeclaration(node) {
-                if (!isPublic(node.modifiers)) return;
+                if (!isPublic(node.modifiers)) {
+                    return;
+                }
                 for (const param of node.parameters || []) {
                     const typeName = (param.typeRef ? param.typeRef.name || '' : '').toLowerCase();
                     if (typeName === 'boolean') {

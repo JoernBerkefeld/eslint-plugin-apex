@@ -32,7 +32,9 @@ export default {
             ApexMethodCallExpression(node) {
                 const callee = (node.rawCallee || '').toLowerCase();
                 const spec = ASSERT_METHODS[callee];
-                if (!spec) return;
+                if (!spec) {
+                    return;
+                }
                 const args = node.arguments || [];
                 if (args.length < spec.expectedArgs) {
                     context.report({

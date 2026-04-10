@@ -12,8 +12,9 @@ const DEFAULT_ASSERT_PATTERNS = [
 ];
 
 function isTestClass(node) {
-    return node.modifiers && node.modifiers.some(
-        (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
+    return (
+        node.modifiers &&
+        node.modifiers.some((m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest')
     );
 }
 
@@ -21,40 +22,48 @@ function isTestMethod(node) {
     return (
         node.modifiers &&
         (node.modifiers.some(
-            (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
+            (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest',
         ) ||
             node.modifiers.some((m) => m.value === 'testmethod'))
     );
 }
 
 function containsAssertCall(body, patterns) {
-    if (!body) return false;
+    if (!body) {
+        return false;
+    }
     const stmts = Array.isArray(body) ? body : body.body || [];
     for (const stmt of stmts) {
-        if (!stmt) continue;
+        if (!stmt) {
+            continue;
+        }
         if (stmt.type === 'ApexExpressionStatement' && stmt.expression) {
             const expr = stmt.expression;
             if (expr.type === 'ApexMethodCallExpression') {
                 const callee = expr.rawCallee || '';
-                if (patterns.some((p) => p.test(callee))) return true;
+                if (patterns.some((p) => p.test(callee))) {
+                    return true;
+                }
             }
         }
         // Recurse into blocks
-        if (stmt.body) {
-            if (containsAssertCall(stmt.body, patterns)) return true;
+        if (stmt.body && containsAssertCall(stmt.body, patterns)) {
+            return true;
         }
-        if (stmt.block) {
-            if (containsAssertCall(stmt.block.body || [], patterns)) return true;
+        if (stmt.block && containsAssertCall(stmt.block.body || [], patterns)) {
+            return true;
         }
-        if (stmt.consequent) {
-            if (containsAssertCall(stmt.consequent, patterns)) return true;
+        if (stmt.consequent && containsAssertCall(stmt.consequent, patterns)) {
+            return true;
         }
-        if (stmt.alternate) {
-            if (containsAssertCall(stmt.alternate, patterns)) return true;
+        if (stmt.alternate && containsAssertCall(stmt.alternate, patterns)) {
+            return true;
         }
         if (stmt.handlers) {
             for (const h of stmt.handlers) {
-                if (containsAssertCall(h.block ? h.block.body || [] : [], patterns)) return true;
+                if (containsAssertCall(h.block ? h.block.body || [] : [], patterns)) {
+                    return true;
+                }
             }
         }
     }
@@ -93,16 +102,20 @@ export default {
 
         return {
             ApexClassDeclaration(node) {
-                if (!isTestClass(node)) return;
+                if (!isTestClass(node)) {
+                    return;
+                }
                 for (const member of node.body || []) {
-                    if (member.type === 'ApexMethodDeclaration' && isTestMethod(member)) {
-                        if (!containsAssertCall(member.body ? member.body.body || [] : [], patterns)) {
-                            context.report({
-                                node: member,
-                                messageId: 'missingAssert',
-                                data: { name: member.id.name },
-                            });
-                        }
+                    if (
+                        member.type === 'ApexMethodDeclaration' &&
+                        isTestMethod(member) &&
+                        !containsAssertCall(member.body ? member.body.body || [] : [], patterns)
+                    ) {
+                        context.report({
+                            node: member,
+                            messageId: 'missingAssert',
+                            data: { name: member.id.name },
+                        });
                     }
                 }
             },

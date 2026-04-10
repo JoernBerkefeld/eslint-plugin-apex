@@ -20,7 +20,7 @@ const STATEFUL_TYPES = new Set([
 
 function implementsStateful(interfaces) {
     return (interfaces || []).some(
-        (i) => i.toLowerCase() === 'database.stateful' || i.toLowerCase() === 'stateful'
+        (i) => i.toLowerCase() === 'database.stateful' || i.toLowerCase() === 'stateful',
     );
 }
 
@@ -28,7 +28,8 @@ export default {
     meta: {
         type: 'problem',
         docs: {
-            description: 'Avoid storing Database result types as instance variables in Database.Stateful batch classes',
+            description:
+                'Avoid storing Database result types as instance variables in Database.Stateful batch classes',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_errorprone.html#avoidstatefuldatabaseresult',
         },
@@ -42,10 +43,16 @@ export default {
     create(context) {
         return {
             ApexClassDeclaration(node) {
-                if (!implementsStateful(node.interfaces)) return;
+                if (!implementsStateful(node.interfaces)) {
+                    return;
+                }
                 for (const member of node.body || []) {
-                    if (member.type !== 'ApexFieldDeclaration') continue;
-                    const typeName = (member.typeRef ? member.typeRef.name || '' : '').toLowerCase();
+                    if (member.type !== 'ApexFieldDeclaration') {
+                        continue;
+                    }
+                    const typeName = (
+                        member.typeRef ? member.typeRef.name || '' : ''
+                    ).toLowerCase();
                     if (STATEFUL_TYPES.has(typeName)) {
                         for (const d of member.declarators || []) {
                             context.report({
