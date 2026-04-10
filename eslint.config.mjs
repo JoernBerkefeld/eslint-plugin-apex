@@ -7,7 +7,7 @@ import js from '@eslint/js';
 /** Flat ESLint config — aligned with `.cursor/rules/new-subproject-setup.mdc` (JSDoc rules relaxed for large catalogs). */
 export default [
     {
-        ignores: ['**/node_modules/**', '**/dist/**', '**/out/**', '**/coverage/**'],
+        ignores: ['**/node_modules/**', '**/dist/**', '**/out/**', '**/coverage/**', 'scripts/**'],
     },
     js.configs.recommended,
     eslintPluginPrettierRecommended,

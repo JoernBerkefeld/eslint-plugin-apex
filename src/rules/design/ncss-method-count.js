@@ -1,6 +1,6 @@
 /**
  * Rule: design/ncss-method-count
- * PMD equivalent: NcssCount (replaces NcssMethodCount and NcssTypeCount)
+ * PMD equivalents: NcssMethodCount, NcssCount, NcssTypeCount
  *
  * Non-Commenting Source Statements (NCSS) is a measure of the number of
  * executable statements excluding comments and blank lines.

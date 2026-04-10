@@ -1,10 +1,12 @@
 /**
  * Rule: perf/no-debug-statements
- * PMD equivalent: DebugsShouldUseLoggingLevel (overlaps with best practice)
+ * PMD equivalent: AvoidDebugStatements
  *
  * System.debug() calls are always logged at FINEST in production unless
  * explicitly filtered. They consume CPU time and log space. Remove or gate
  * debug calls in production-bound code.
+ *
+ * Thematic overlap: `best-debug-use-logging-level` covers missing LoggingLevel on debug calls.
  */
 
 export default {

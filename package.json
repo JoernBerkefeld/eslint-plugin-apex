@@ -1,6 +1,6 @@
 {
     "name": "eslint-plugin-apex",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "ESLint plugin for Salesforce Apex â€” ports PMD Apex rules to the ESLint ecosystem",
     "type": "module",
     "main": "src/index.js",
@@ -46,7 +46,7 @@
         "prettier": "^3.8.1"
     },
     "scripts": {
-        "test": "node --test tests/rules.test.js tests/parser.test.js",
+        "test": "node --test tests/docs-coverage.test.js tests/parser.test.js tests/pmd-converter-coverage.test.js tests/rules.test.js",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
         "format": "prettier --write .",
