@@ -26,7 +26,11 @@ export default {
                 if (node.block && (node.block.body || []).length === 0) {
                     context.report({ node, messageId: 'emptyTry' });
                 }
-                if (node.finalizer && node.finalizer.block && (node.finalizer.block.body || []).length === 0) {
+                if (
+                    node.finalizer &&
+                    node.finalizer.block &&
+                    (node.finalizer.block.body || []).length === 0
+                ) {
                     context.report({ node: node.finalizer, messageId: 'emptyFinally' });
                 }
             },

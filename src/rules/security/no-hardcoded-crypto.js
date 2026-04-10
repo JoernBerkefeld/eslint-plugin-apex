@@ -39,12 +39,17 @@ export default {
         return {
             ApexMethodCallExpression(node) {
                 const callee = (node.rawCallee || '').toLowerCase();
-                if (!BAD_CRYPTO_METHODS.has(callee)) return;
+                if (!BAD_CRYPTO_METHODS.has(callee)) {
+                    return;
+                }
 
                 // Check if any argument is a string literal (hardcoded key/IV)
                 const args = node.arguments || [];
                 const hasLiteral = args.some(
-                    (a) => a && a.type === 'ApexLiteralExpression' && ((a.raw || '').startsWith("'") || (a.raw || '').startsWith('"'))
+                    (a) =>
+                        a &&
+                        a.type === 'ApexLiteralExpression' &&
+                        ((a.raw || '').startsWith("'") || (a.raw || '').startsWith('"')),
                 );
 
                 if (hasLiteral) {

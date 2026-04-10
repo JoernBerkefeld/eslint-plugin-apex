@@ -52,7 +52,8 @@ export default {
     meta: {
         type: 'problem',
         docs: {
-            description: 'Avoid declaring types with the same name as System or Schema namespace types',
+            description:
+                'Avoid declaring types with the same name as System or Schema namespace types',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_errorprone.html#typeshadowsbuiltinnamespace',
         },
@@ -71,9 +72,15 @@ export default {
         }
 
         return {
-            ApexClassDeclaration(node) { checkName(node, 'class', node.id.name); },
-            ApexInterfaceDeclaration(node) { checkName(node, 'interface', node.id.name); },
-            ApexEnumDeclaration(node) { checkName(node, 'enum', node.id.name); },
+            ApexClassDeclaration(node) {
+                checkName(node, 'class', node.id.name);
+            },
+            ApexInterfaceDeclaration(node) {
+                checkName(node, 'interface', node.id.name);
+            },
+            ApexEnumDeclaration(node) {
+                checkName(node, 'enum', node.id.name);
+            },
         };
     },
 };

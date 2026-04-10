@@ -19,21 +19,37 @@ const DECISION_NODES = new Set([
 ]);
 
 function countComplexity(stmts, depth) {
-    if (!stmts) return 0;
+    if (!stmts) {
+        return 0;
+    }
     let count = 0;
     const list = Array.isArray(stmts) ? stmts : stmts.body || [];
     for (const stmt of list) {
-        if (!stmt) continue;
-        if (DECISION_NODES.has(stmt.type)) count++;
+        if (!stmt) {
+            continue;
+        }
+        if (DECISION_NODES.has(stmt.type)) {
+            count++;
+        }
         if (stmt.type === 'ApexBinaryExpression') {
             const op = stmt.operator || '';
-            if (op.includes('&&') || op.includes('||')) count++;
+            if (op.includes('&&') || op.includes('||')) {
+                count++;
+            }
         }
         // Recurse
-        if (stmt.body) count += countComplexity(stmt.body, depth + 1);
-        if (stmt.block) count += countComplexity(stmt.block.body || [], depth + 1);
-        if (stmt.consequent) count += countComplexity([stmt.consequent], depth + 1);
-        if (stmt.alternate) count += countComplexity([stmt.alternate], depth + 1);
+        if (stmt.body) {
+            count += countComplexity(stmt.body, depth + 1);
+        }
+        if (stmt.block) {
+            count += countComplexity(stmt.block.body || [], depth + 1);
+        }
+        if (stmt.consequent) {
+            count += countComplexity([stmt.consequent], depth + 1);
+        }
+        if (stmt.alternate) {
+            count += countComplexity([stmt.alternate], depth + 1);
+        }
         if (stmt.handlers) {
             for (const h of stmt.handlers) {
                 count++;
@@ -82,7 +98,9 @@ export default {
 
         return {
             ApexMethodDeclaration(node) {
-                if (!node.body) return;
+                if (!node.body) {
+                    return;
+                }
                 const complexity = 1 + countComplexity(node.body.body || [], 0);
                 if (complexity > methodThreshold) {
                     context.report({

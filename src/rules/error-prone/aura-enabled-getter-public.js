@@ -28,12 +28,14 @@ export default {
         return {
             ApexPropertyDeclaration(node) {
                 const hasAuraEnabled = (node.modifiers || []).some(
-                    (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'auraenabled'
+                    (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'auraenabled',
                 );
-                if (!hasAuraEnabled) return;
+                if (!hasAuraEnabled) {
+                    return;
+                }
 
                 const isPublic = (node.modifiers || []).some(
-                    (m) => m.type === 'ApexModifierNode' && PUBLIC_MODIFIERS.has(m.value)
+                    (m) => m.type === 'ApexModifierNode' && PUBLIC_MODIFIERS.has(m.value),
                 );
                 if (!isPublic) {
                     context.report({

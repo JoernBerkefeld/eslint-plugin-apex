@@ -44,12 +44,18 @@ export default {
         const listeners = {};
 
         for (const t of LOOP_TYPES) {
-            listeners[t] = () => { loopDepth++; };
-            listeners[`${t}:exit`] = () => { loopDepth--; };
+            listeners[t] = () => {
+                loopDepth++;
+            };
+            listeners[`${t}:exit`] = () => {
+                loopDepth--;
+            };
         }
 
         listeners.ApexMethodCallExpression = function (node) {
-            if (loopDepth === 0) return;
+            if (loopDepth === 0) {
+                return;
+            }
             const callee = node.rawCallee || '';
             for (const { pattern, label } of HIGH_COST_PATTERNS) {
                 if (pattern.test(callee)) {

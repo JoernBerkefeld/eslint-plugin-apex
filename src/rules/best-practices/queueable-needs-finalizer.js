@@ -12,19 +12,29 @@ function implementsQueueable(interfaces) {
 }
 
 function containsAttachFinalizer(stmts) {
-    if (!stmts) return false;
+    if (!stmts) {
+        return false;
+    }
     for (const stmt of stmts) {
-        if (!stmt) continue;
+        if (!stmt) {
+            continue;
+        }
         if (
             stmt.type === 'ApexExpressionStatement' &&
             stmt.expression &&
             stmt.expression.type === 'ApexMethodCallExpression'
         ) {
             const callee = (stmt.expression.rawCallee || '').toLowerCase();
-            if (callee === 'system.attachfinalizer' || callee === 'attachfinalizer') return true;
+            if (callee === 'system.attachfinalizer' || callee === 'attachfinalizer') {
+                return true;
+            }
         }
-        if (stmt.body && containsAttachFinalizer(stmt.body.body || stmt.body)) return true;
-        if (stmt.block && containsAttachFinalizer(stmt.block.body || [])) return true;
+        if (stmt.body && containsAttachFinalizer(stmt.body.body || stmt.body)) {
+            return true;
+        }
+        if (stmt.block && containsAttachFinalizer(stmt.block.body || [])) {
+            return true;
+        }
     }
     return false;
 }
@@ -47,16 +57,19 @@ export default {
     create(context) {
         return {
             ApexClassDeclaration(node) {
-                if (!implementsQueueable(node.interfaces)) return;
+                if (!implementsQueueable(node.interfaces)) {
+                    return;
+                }
 
                 // Find execute() method
                 const executeMethod = (node.body || []).find(
                     (m) =>
-                        m.type === 'ApexMethodDeclaration' &&
-                        m.id.name.toLowerCase() === 'execute'
+                        m.type === 'ApexMethodDeclaration' && m.id.name.toLowerCase() === 'execute',
                 );
 
-                if (!executeMethod) return;
+                if (!executeMethod) {
+                    return;
+                }
 
                 const body = executeMethod.body ? executeMethod.body.body || [] : [];
                 if (!containsAttachFinalizer(body)) {

@@ -17,7 +17,8 @@ export default {
     meta: {
         type: 'problem',
         docs: {
-            description: 'Avoid hardcoding Salesforce record IDs — they differ between environments',
+            description:
+                'Avoid hardcoding Salesforce record IDs — they differ between environments',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_errorprone.html#avoidhardcodingid',
         },
@@ -33,7 +34,9 @@ export default {
             ApexLiteralExpression(node) {
                 const raw = node.raw || node.value || '';
                 // Only check string literals
-                if (!raw.startsWith("'") && !raw.startsWith('"')) return;
+                if (!raw.startsWith("'") && !raw.startsWith('"')) {
+                    return;
+                }
                 const value = raw.slice(1, -1);
                 if (LIKELY_ID.test(value)) {
                     context.report({

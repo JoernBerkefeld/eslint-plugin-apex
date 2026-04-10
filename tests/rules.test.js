@@ -100,12 +100,16 @@ describe('best/test-has-asserts', () => {
     it('runs', () => {
         tester.run('best-test-has-asserts', testHasAsserts, {
             valid: [
-                cls('@isTest\npublic class T {\n  @isTest\n  static void t() {\n    System.assert(true);\n  }\n}'),
+                cls(
+                    '@isTest\npublic class T {\n  @isTest\n  static void t() {\n    System.assert(true);\n  }\n}',
+                ),
                 cls('public class Foo { public void bar() {} }'),
             ],
             invalid: [
                 {
-                    ...cls('@isTest\npublic class T {\n  @isTest\n  static void t() { Integer x = 1; }\n}'),
+                    ...cls(
+                        '@isTest\npublic class T {\n  @isTest\n  static void t() { Integer x = 1; }\n}',
+                    ),
                     errors: [{ messageId: 'missingAssert' }],
                 },
             ],
@@ -133,9 +137,7 @@ describe('best/test-no-see-all-data', () => {
 describe('best/test-method-annotation', () => {
     it('runs', () => {
         tester.run('best-test-method-annotation', testMethodAnnotation, {
-            valid: [
-                cls('public class Foo {\n  @isTest\n  static void t() {}\n}'),
-            ],
+            valid: [cls('public class Foo {\n  @isTest\n  static void t() {}\n}')],
             invalid: [
                 {
                     ...cls('public class Foo {\n  static testMethod void t() {}\n}'),
@@ -149,9 +151,7 @@ describe('best/test-method-annotation', () => {
 describe('best/no-global-modifier', () => {
     it('runs', () => {
         tester.run('best-no-global-modifier', noGlobalModifier, {
-            valid: [
-                cls('public class Foo {}'),
-            ],
+            valid: [cls('public class Foo {}')],
             invalid: [
                 {
                     ...cls('global class Foo {}'),
@@ -165,9 +165,7 @@ describe('best/no-global-modifier', () => {
 describe('best/no-logic-in-trigger', () => {
     it('runs', () => {
         tester.run('best-no-logic-in-trigger', noLogicInTrigger, {
-            valid: [
-                trig('trigger T on Account (before insert) { AccountHandler.run(); }'),
-            ],
+            valid: [trig('trigger T on Account (before insert) { AccountHandler.run(); }')],
             invalid: [
                 {
                     ...trig('trigger T on Account (before insert) { if (Trigger.isBefore) { } }'),
@@ -182,11 +180,13 @@ describe('best/debug-use-logging-level', () => {
     it('runs', () => {
         tester.run('best-debug-use-logging-level', debugUseLoggingLevel, {
             valid: [
-                cls('public class Foo { public void run() { System.debug(LoggingLevel.INFO, \'msg\'); } }'),
+                cls(
+                    "public class Foo { public void run() { System.debug(LoggingLevel.INFO, 'msg'); } }",
+                ),
             ],
             invalid: [
                 {
-                    ...cls('public class Foo { public void run() { System.debug(\'msg\'); } }'),
+                    ...cls("public class Foo { public void run() { System.debug('msg'); } }"),
                     errors: [{ messageId: 'missingLevel' }],
                 },
             ],
@@ -197,9 +197,7 @@ describe('best/debug-use-logging-level', () => {
 describe('best/no-future-annotation', () => {
     it('runs', () => {
         tester.run('best-no-future-annotation', noFutureAnnotation, {
-            valid: [
-                cls('public class Foo { public void run() {} }'),
-            ],
+            valid: [cls('public class Foo { public void run() {} }')],
             invalid: [
                 {
                     ...cls('public class Foo {\n  @future\n  public static void run() {}\n}'),
@@ -215,9 +213,7 @@ describe('best/no-future-annotation', () => {
 describe('style/braces-for-if', () => {
     it('runs', () => {
         tester.run('style-braces-for-if', bracesForIf, {
-            valid: [
-                cls('public class Foo { public void run() { if (true) {} } }'),
-            ],
+            valid: [cls('public class Foo { public void run() { if (true) {} } }')],
             invalid: [
                 {
                     ...cls('public class Foo { public void run() { if (true) return; } }'),
@@ -232,11 +228,15 @@ describe('style/braces-for-for', () => {
     it('runs', () => {
         tester.run('style-braces-for-for', bracesForFor, {
             valid: [
-                cls('public class Foo { public void run() { for (Integer i = 0; i < 1; i++) {} } }'),
+                cls(
+                    'public class Foo { public void run() { for (Integer i = 0; i < 1; i++) {} } }',
+                ),
             ],
             invalid: [
                 {
-                    ...cls('public class Foo { public void run() { for (Integer i = 0; i < 1; i++) return; } }'),
+                    ...cls(
+                        'public class Foo { public void run() { for (Integer i = 0; i < 1; i++) return; } }',
+                    ),
                     errors: [{ messageId: 'missingBraces' }],
                 },
             ],
@@ -247,9 +247,7 @@ describe('style/braces-for-for', () => {
 describe('style/braces-for-while', () => {
     it('runs', () => {
         tester.run('style-braces-for-while', bracesForWhile, {
-            valid: [
-                cls('public class Foo { public void run() { while (false) {} } }'),
-            ],
+            valid: [cls('public class Foo { public void run() { while (false) {} } }')],
             invalid: [
                 {
                     ...cls('public class Foo { public void run() { while (false) return; } }'),
@@ -263,9 +261,7 @@ describe('style/braces-for-while', () => {
 describe('style/one-declaration-per-line', () => {
     it('runs', () => {
         tester.run('style-one-declaration-per-line', oneDeclarationPerLine, {
-            valid: [
-                cls('public class Foo { public void run() { Integer x = 1; } }'),
-            ],
+            valid: [cls('public class Foo { public void run() { Integer x = 1; } }')],
             invalid: [
                 {
                     ...cls('public class Foo { public void run() { Integer x = 1, y = 2; } }'),
@@ -281,12 +277,12 @@ describe('style/one-declaration-per-line', () => {
 describe('design/excessive-parameters', () => {
     it('runs', () => {
         tester.run('design-excessive-parameters', excessiveParameters, {
-            valid: [
-                cls('public class Foo { public void run(String a, String b) {} }'),
-            ],
+            valid: [cls('public class Foo { public void run(String a, String b) {} }')],
             invalid: [
                 {
-                    ...cls('public class Foo { public void run(String a, String b, String c, String d, String e) {} }'),
+                    ...cls(
+                        'public class Foo { public void run(String a, String b, String c, String d, String e) {} }',
+                    ),
                     errors: [{ messageId: 'tooManyParams' }],
                 },
             ],
@@ -297,12 +293,12 @@ describe('design/excessive-parameters', () => {
 describe('design/no-deep-nesting', () => {
     it('runs', () => {
         tester.run('design-no-deep-nesting', noDeepNesting, {
-            valid: [
-                cls('public class Foo { public void run() { if (true) { if (true) {} } } }'),
-            ],
+            valid: [cls('public class Foo { public void run() { if (true) { if (true) {} } } }')],
             invalid: [
                 {
-                    ...cls('public class Foo { public void run() { if (true) { if (true) { if (true) { if (true) {} } } } } }'),
+                    ...cls(
+                        'public class Foo { public void run() { if (true) { if (true) { if (true) { if (true) {} } } } } }',
+                    ),
                     errors: [{ messageId: 'tooDeep' }],
                 },
             ],
@@ -313,9 +309,7 @@ describe('design/no-deep-nesting', () => {
 describe('design/no-boolean-parameters', () => {
     it('runs', () => {
         tester.run('design-no-boolean-parameters', noBooleanParameters, {
-            valid: [
-                cls('public class Foo { public void run(String mode) {} }'),
-            ],
+            valid: [cls('public class Foo { public void run(String mode) {} }')],
             invalid: [
                 {
                     ...cls('public class Foo { public void run(Boolean isActive) {} }'),
@@ -329,9 +323,7 @@ describe('design/no-boolean-parameters', () => {
 describe('design/too-many-fields', () => {
     it('runs', () => {
         tester.run('design-too-many-fields', tooManyFields, {
-            valid: [
-                cls('public class Foo { private String a; private String b; }'),
-            ],
+            valid: [cls('public class Foo { private String a; private String b; }')],
             invalid: [
                 {
                     ...cls(`public class Foo {
@@ -356,11 +348,15 @@ describe('error/no-empty-catch', () => {
     it('runs', () => {
         tester.run('error-no-empty-catch', noEmptyCatch, {
             valid: [
-                cls('public class Foo { public void run() { try {} catch(Exception e) { System.debug(e); } } }'),
+                cls(
+                    'public class Foo { public void run() { try {} catch(Exception e) { System.debug(e); } } }',
+                ),
             ],
             invalid: [
                 {
-                    ...cls('public class Foo { public void run() { try {} catch(Exception e) {} } }'),
+                    ...cls(
+                        'public class Foo { public void run() { try {} catch(Exception e) {} } }',
+                    ),
                     errors: [{ messageId: 'emptyCatch' }],
                 },
             ],
@@ -371,9 +367,7 @@ describe('error/no-empty-catch', () => {
 describe('error/no-empty-if', () => {
     it('runs', () => {
         tester.run('error-no-empty-if', noEmptyIf, {
-            valid: [
-                cls('public class Foo { public void run() { if (true) { return; } } }'),
-            ],
+            valid: [cls('public class Foo { public void run() { if (true) { return; } } }')],
             invalid: [
                 {
                     ...cls('public class Foo { public void run() { if (true) {} } }'),
@@ -387,9 +381,7 @@ describe('error/no-empty-if', () => {
 describe('error/no-hardcoded-id', () => {
     it('runs', () => {
         tester.run('error-no-hardcoded-id', noHardcodedId, {
-            valid: [
-                cls("public class Foo { public void run() { String s = 'hello world'; } }"),
-            ],
+            valid: [cls("public class Foo { public void run() { String s = 'hello world'; } }")],
             invalid: [
                 {
                     ...cls("public class Foo { public void run() { Id i = '001000000000001'; } }"),
@@ -404,7 +396,9 @@ describe('error/override-both-equals-hashcode', () => {
     it('runs', () => {
         tester.run('error-override-both-equals-hashcode', overrideBothEqualsHashcode, {
             valid: [
-                cls('public class Foo { public Boolean equals(Object o) { return true; } public Integer hashCode() { return 1; } }'),
+                cls(
+                    'public class Foo { public Boolean equals(Object o) { return true; } public Integer hashCode() { return 1; } }',
+                ),
                 cls('public class Foo {}'),
             ],
             invalid: [
@@ -420,9 +414,7 @@ describe('error/override-both-equals-hashcode', () => {
 describe('error/no-method-name-as-class', () => {
     it('runs', () => {
         tester.run('error-no-method-name-as-class', noMethodNameAsClass, {
-            valid: [
-                cls('public class Foo { public void bar() {} }'),
-            ],
+            valid: [cls('public class Foo { public void bar() {} }')],
             invalid: [
                 {
                     ...cls('public class Foo { public void Foo() {} }'),
@@ -436,9 +428,7 @@ describe('error/no-method-name-as-class', () => {
 describe('error/test-methods-in-test-class', () => {
     it('runs', () => {
         tester.run('error-test-methods-in-test-class', testMethodsInTestClass, {
-            valid: [
-                cls('@isTest\npublic class T {\n  @isTest\n  static void t() {}\n}'),
-            ],
+            valid: [cls('@isTest\npublic class T {\n  @isTest\n  static void t() {}\n}')],
             invalid: [
                 {
                     ...cls('public class Foo {\n  @isTest\n  static void t() {}\n}'),
@@ -452,9 +442,7 @@ describe('error/test-methods-in-test-class', () => {
 describe('error/no-type-shadow-namespace', () => {
     it('runs', () => {
         tester.run('error-no-type-shadow-namespace', noTypeShadowNamespace, {
-            valid: [
-                cls('public class MyClass {}'),
-            ],
+            valid: [cls('public class MyClass {}')],
             invalid: [
                 {
                     ...cls('public class String {}'),
@@ -470,12 +458,12 @@ describe('error/no-type-shadow-namespace', () => {
 describe('perf/no-dml-in-loop', () => {
     it('runs', () => {
         tester.run('perf-no-dml-in-loop', noDmlInLoop, {
-            valid: [
-                cls('public class Foo { public void run() { insert new List<Account>(); } }'),
-            ],
+            valid: [cls('public class Foo { public void run() { insert new List<Account>(); } }')],
             invalid: [
                 {
-                    ...cls('public class Foo { public void run() { for (Integer i = 0; i < 10; i++) { insert new Account(); } } }'),
+                    ...cls(
+                        'public class Foo { public void run() { for (Integer i = 0; i < 10; i++) { insert new Account(); } } }',
+                    ),
                     errors: [{ messageId: 'dmlInLoop' }],
                 },
             ],
@@ -487,11 +475,15 @@ describe('perf/no-non-restrictive-query', () => {
     it('runs', () => {
         tester.run('perf-no-non-restrictive-query', noNonRestrictiveQuery, {
             valid: [
-                cls('public class Foo { public void run() { List<Account> a = [SELECT Id FROM Account WHERE Name = \'Test\']; } }'),
+                cls(
+                    "public class Foo { public void run() { List<Account> a = [SELECT Id FROM Account WHERE Name = 'Test']; } }",
+                ),
             ],
             invalid: [
                 {
-                    ...cls('public class Foo { public void run() { List<Account> a = [SELECT Id FROM Account]; } }'),
+                    ...cls(
+                        'public class Foo { public void run() { List<Account> a = [SELECT Id FROM Account]; } }',
+                    ),
                     errors: [{ messageId: 'noWhereClause' }],
                 },
             ],
@@ -505,11 +497,15 @@ describe('security/no-insecure-endpoint', () => {
     it('runs', () => {
         tester.run('security-no-insecure-endpoint', noInsecureEndpoint, {
             valid: [
-                cls("public class Foo { public void run() { String e = 'https://api.example.com'; } }"),
+                cls(
+                    "public class Foo { public void run() { String e = 'https://api.example.com'; } }",
+                ),
             ],
             invalid: [
                 {
-                    ...cls("public class Foo { public void run() { String e = 'http://api.example.com'; } }"),
+                    ...cls(
+                        "public class Foo { public void run() { String e = 'http://api.example.com'; } }",
+                    ),
                     errors: [{ messageId: 'insecureEndpoint' }],
                 },
             ],
@@ -520,10 +516,7 @@ describe('security/no-insecure-endpoint', () => {
 describe('security/sharing-violations', () => {
     it('runs', () => {
         tester.run('security-sharing-violations', sharingViolations, {
-            valid: [
-                cls('public with sharing class Foo {}'),
-                cls('@isTest\npublic class Foo {}'),
-            ],
+            valid: [cls('public with sharing class Foo {}'), cls('@isTest\npublic class Foo {}')],
             invalid: [
                 {
                     ...cls('public class Foo {}'),
@@ -538,11 +531,15 @@ describe('security/no-soql-injection', () => {
     it('runs', () => {
         tester.run('security-no-soql-injection', noSoqlInjection, {
             valid: [
-                cls("public class Foo { public void run() { List<Account> a = Database.query('SELECT Id FROM Account'); } }"),
+                cls(
+                    "public class Foo { public void run() { List<Account> a = Database.query('SELECT Id FROM Account'); } }",
+                ),
             ],
             invalid: [
                 {
-                    ...cls("public class Foo { public void run(String q) { List<Account> a = Database.query(q); } }"),
+                    ...cls(
+                        'public class Foo { public void run(String q) { List<Account> a = Database.query(q); } }',
+                    ),
                     errors: [{ messageId: 'soqlInjection' }],
                 },
             ],

@@ -23,7 +23,9 @@ export default {
 
     create(context) {
         function checkQuery(node) {
-            if (node.hasWhereClause || node.hasLimitClause) return;
+            if (node.hasWhereClause || node.hasLimitClause) {
+                return;
+            }
             context.report({ node, messageId: 'noWhereClause' });
         }
 

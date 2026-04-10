@@ -36,7 +36,7 @@ export default {
         return {
             ApexClassDeclaration(node) {
                 const count = (node.body || []).filter(
-                    (m) => m.type === 'ApexFieldDeclaration'
+                    (m) => m.type === 'ApexFieldDeclaration',
                 ).length;
                 if (count > minimum) {
                     context.report({

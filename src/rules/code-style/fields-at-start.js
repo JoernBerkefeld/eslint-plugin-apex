@@ -6,10 +6,7 @@
  * This makes the class structure more predictable and readable.
  */
 
-const METHOD_TYPES = new Set([
-    'ApexMethodDeclaration',
-    'ApexConstructorDeclaration',
-]);
+const METHOD_TYPES = new Set(['ApexMethodDeclaration', 'ApexConstructorDeclaration']);
 
 export default {
     meta: {

@@ -29,8 +29,16 @@ export default {
                 if (node.consequent && !isBlock(node.consequent)) {
                     context.report({ node, messageId: 'missingBraces', data: { kind: 'if' } });
                 }
-                if (node.alternate && !isBlock(node.alternate) && node.alternate.type !== 'ApexIfStatement') {
-                    context.report({ node: node.alternate, messageId: 'missingBraces', data: { kind: 'else' } });
+                if (
+                    node.alternate &&
+                    !isBlock(node.alternate) &&
+                    node.alternate.type !== 'ApexIfStatement'
+                ) {
+                    context.report({
+                        node: node.alternate,
+                        messageId: 'missingBraces',
+                        data: { kind: 'else' },
+                    });
                 }
             },
         };

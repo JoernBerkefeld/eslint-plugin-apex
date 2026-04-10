@@ -36,30 +36,42 @@ export default {
         const strictMode = (context.options[0] || {}).strictMode === true;
 
         function isSystemDebug(node) {
-            if (node.type !== 'ApexMethodCallExpression') return false;
+            if (node.type !== 'ApexMethodCallExpression') {
+                return false;
+            }
             const callee = (node.rawCallee || '').toLowerCase();
             return callee === 'system.debug' || callee === 'debug';
         }
 
         function hasLoggingLevelArg(args) {
-            if (!args || args.length === 0) return false;
+            if (!args || args.length === 0) {
+                return false;
+            }
             const firstArg = args[0];
-            if (!firstArg) return false;
+            if (!firstArg) {
+                return false;
+            }
             const text = (firstArg.name || firstArg.rawName || '').toLowerCase();
             return text.startsWith('logginglevel.');
         }
 
         function isDebugLevel(args) {
-            if (!args || args.length === 0) return false;
+            if (!args || args.length === 0) {
+                return false;
+            }
             const firstArg = args[0];
-            if (!firstArg) return false;
+            if (!firstArg) {
+                return false;
+            }
             const text = (firstArg.name || firstArg.rawName || '').toLowerCase();
             return text === 'logginglevel.debug';
         }
 
         return {
             ApexMethodCallExpression(node) {
-                if (!isSystemDebug(node)) return;
+                if (!isSystemDebug(node)) {
+                    return;
+                }
                 const args = node.arguments || [];
                 if (args.length < 2) {
                     // Single-arg System.debug(msg) — missing LoggingLevel

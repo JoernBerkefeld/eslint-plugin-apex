@@ -72,7 +72,11 @@ describe('ApexClassDeclaration', () => {
     it('detects class with @IsTest annotation', () => {
         const result = parse('@isTest\npublic class MyTest {}');
         const cls = result.ast.body[0];
-        assert.ok(cls.modifiers.some((m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'));
+        assert.ok(
+            cls.modifiers.some(
+                (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest',
+            ),
+        );
     });
 
     it('detects class with superclass', () => {
@@ -108,7 +112,9 @@ describe('ApexClassDeclaration', () => {
 
 describe('ApexMethodDeclaration', () => {
     it('detects return type and parameters', () => {
-        const result = parse('public class Foo { public String greet(String name, Integer count) { return name; } }');
+        const result = parse(
+            'public class Foo { public String greet(String name, Integer count) { return name; } }',
+        );
         const cls = result.ast.body[0];
         const method = cls.body.find((m) => m.type === 'ApexMethodDeclaration');
         assert.ok(method, 'should find method');
@@ -133,7 +139,7 @@ describe('ApexTriggerDeclaration', () => {
     it('parses a trigger file', () => {
         const result = parseForESLint(
             'trigger AccountTrigger on Account (before insert, after update) {}',
-            { filePath: 'AccountTrigger.trigger' }
+            { filePath: 'AccountTrigger.trigger' },
         );
         const trigger = result.ast.body[0];
         assertNode(trigger, 'ApexTriggerDeclaration');
@@ -160,7 +166,11 @@ describe('Statements', () => {
 
     it('parses for-each loop', () => {
         const stmts = getMethodBody('for (Account a : new List<Account>()) {}');
-        assert.ok(stmts.some((s) => s && (s.type === 'ApexForStatement' || s.type === 'ApexForEachStatement')));
+        assert.ok(
+            stmts.some(
+                (s) => s && (s.type === 'ApexForStatement' || s.type === 'ApexForEachStatement'),
+            ),
+        );
     });
 
     it('parses try-catch', () => {
@@ -183,7 +193,9 @@ describe('Statements', () => {
 
 describe('SOQL expressions', () => {
     it('parses inline SOQL', () => {
-        const result = parse('public class Foo { public void q() { List<Account> a = [SELECT Id FROM Account]; } }');
+        const result = parse(
+            'public class Foo { public void q() { List<Account> a = [SELECT Id FROM Account]; } }',
+        );
         const cls = result.ast.body[0];
         const method = cls.body.find((m) => m.type === 'ApexMethodDeclaration');
         // SOQL may appear in variable init or expression

@@ -11,11 +11,13 @@
 const SHARING_KEYWORDS = new Set(['with sharing', 'without sharing', 'inherited sharing']);
 
 function hasSharingDeclaration(modifiers) {
-    if (!modifiers) return false;
+    if (!modifiers) {
+        return false;
+    }
     return modifiers.some(
         (m) =>
             m.type === 'ApexModifierNode' &&
-            (m.value === 'with' || m.value === 'without' || m.value === 'inherited')
+            (m.value === 'with' || m.value === 'without' || m.value === 'inherited'),
     );
 }
 
@@ -23,7 +25,8 @@ export default {
     meta: {
         type: 'suggestion',
         docs: {
-            description: "Classes that access data should explicitly declare 'with sharing' or 'without sharing'",
+            description:
+                "Classes that access data should explicitly declare 'with sharing' or 'without sharing'",
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_security.html#apexsharingviolations',
         },
@@ -39,9 +42,11 @@ export default {
             ApexClassDeclaration(node) {
                 // Skip test classes and inner classes (heuristic)
                 const isTest = (node.modifiers || []).some(
-                    (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
+                    (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest',
                 );
-                if (isTest) return;
+                if (isTest) {
+                    return;
+                }
 
                 const src = context.sourceCode.getText(node);
                 const hasSharing = src.toLowerCase().includes('sharing');

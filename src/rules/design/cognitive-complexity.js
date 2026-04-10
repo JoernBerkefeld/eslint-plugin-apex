@@ -9,56 +9,87 @@
  */
 
 function countCognitive(stmts, nestingLevel) {
-    if (!stmts) return 0;
+    if (!stmts) {
+        return 0;
+    }
     let count = 0;
     const list = Array.isArray(stmts) ? stmts : stmts.body || [];
 
     for (const stmt of list) {
-        if (!stmt) continue;
+        if (!stmt) {
+            continue;
+        }
 
-        if (
-            stmt.type === 'ApexIfStatement' ||
-            stmt.type === 'ApexForStatement' ||
-            stmt.type === 'ApexForEachStatement' ||
-            stmt.type === 'ApexWhileStatement' ||
-            stmt.type === 'ApexDoWhileStatement' ||
-            stmt.type === 'ApexSwitchStatement' ||
-            stmt.type === 'ApexCatchClause'
-        ) {
-            count += 1 + nestingLevel;
-            if (stmt.body) count += countCognitive(stmt.body, nestingLevel + 1);
-            if (stmt.block) count += countCognitive(stmt.block.body || [], nestingLevel + 1);
-            if (stmt.consequent) count += countCognitive([stmt.consequent], nestingLevel + 1);
-            if (stmt.alternate && stmt.alternate.type !== 'ApexIfStatement') {
-                count += 1; // else
-                count += countCognitive([stmt.alternate], nestingLevel + 1);
-            } else if (stmt.alternate) {
-                count += countCognitive([stmt.alternate], nestingLevel); // else if doesn't add nesting
+        switch (stmt.type) {
+            case 'ApexIfStatement':
+            case 'ApexForStatement':
+            case 'ApexForEachStatement':
+            case 'ApexWhileStatement':
+            case 'ApexDoWhileStatement':
+            case 'ApexSwitchStatement':
+            case 'ApexCatchClause': {
+                count += 1 + nestingLevel;
+                if (stmt.body) {
+                    count += countCognitive(stmt.body, nestingLevel + 1);
+                }
+                if (stmt.block) {
+                    count += countCognitive(stmt.block.body || [], nestingLevel + 1);
+                }
+                if (stmt.consequent) {
+                    count += countCognitive([stmt.consequent], nestingLevel + 1);
+                }
+                if (stmt.alternate && stmt.alternate.type !== 'ApexIfStatement') {
+                    count += 1; // else
+                    count += countCognitive([stmt.alternate], nestingLevel + 1);
+                } else if (stmt.alternate) {
+                    count += countCognitive([stmt.alternate], nestingLevel); // else if doesn't add nesting
+                }
+                if (stmt.handlers) {
+                    for (const h of stmt.handlers) {
+                        count += countCognitive(
+                            h.block ? h.block.body || [] : [],
+                            nestingLevel + 1,
+                        );
+                    }
+                }
+                if (stmt.cases) {
+                    for (const c of stmt.cases) {
+                        count += countCognitive(c.body ? c.body.body || [] : [], nestingLevel + 1);
+                    }
+                }
+
+                break;
             }
-            if (stmt.handlers) {
-                for (const h of stmt.handlers) {
-                    count += countCognitive(h.block ? h.block.body || [] : [], nestingLevel + 1);
+            case 'ApexTryStatement': {
+                count += countCognitive(stmt.block ? stmt.block.body || [] : [], nestingLevel);
+                if (stmt.handlers) {
+                    for (const h of stmt.handlers) {
+                        count += 1 + nestingLevel;
+                        count += countCognitive(
+                            h.block ? h.block.body || [] : [],
+                            nestingLevel + 1,
+                        );
+                    }
+                }
+
+                break;
+            }
+            case 'ApexBinaryExpression': {
+                const op = stmt.operator || '';
+                if (op.includes('&&') || op.includes('||')) {
+                    count += 1;
+                }
+
+                break;
+            }
+            default: {
+                if (stmt.body) {
+                    count += countCognitive(stmt.body, nestingLevel);
+                }
+                if (stmt.block) {
+                    count += countCognitive(stmt.block.body || [], nestingLevel);
                 }
             }
-            if (stmt.cases) {
-                for (const c of stmt.cases) {
-                    count += countCognitive(c.body ? c.body.body || [] : [], nestingLevel + 1);
-                }
-            }
-        } else if (stmt.type === 'ApexTryStatement') {
-            count += countCognitive(stmt.block ? stmt.block.body || [] : [], nestingLevel);
-            if (stmt.handlers) {
-                for (const h of stmt.handlers) {
-                    count += 1 + nestingLevel;
-                    count += countCognitive(h.block ? h.block.body || [] : [], nestingLevel + 1);
-                }
-            }
-        } else if (stmt.type === 'ApexBinaryExpression') {
-            const op = stmt.operator || '';
-            if (op.includes('&&') || op.includes('||')) count += 1;
-        } else {
-            if (stmt.body) count += countCognitive(stmt.body, nestingLevel);
-            if (stmt.block) count += countCognitive(stmt.block.body || [], nestingLevel);
         }
     }
     return count;
@@ -97,7 +128,9 @@ export default {
 
         return {
             ApexMethodDeclaration(node) {
-                if (!node.body) return;
+                if (!node.body) {
+                    return;
+                }
                 const complexity = countCognitive(node.body.body || [], 0);
                 if (complexity > methodThreshold) {
                     context.report({

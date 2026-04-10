@@ -7,10 +7,7 @@
  * reuse the logic from other contexts.
  */
 
-const SOQL_TYPES = new Set([
-    'ApexSoqlExpression',
-    'ApexSoslExpression',
-]);
+const SOQL_TYPES = new Set(['ApexSoqlExpression', 'ApexSoslExpression']);
 const DML_TYPES = new Set([
     'ApexInsertStatement',
     'ApexUpdateStatement',
@@ -29,15 +26,29 @@ const CONTROL_FLOW_TYPES = new Set([
 ]);
 
 function hasLogic(stmts) {
-    if (!stmts) return false;
+    if (!stmts) {
+        return false;
+    }
     for (const stmt of stmts) {
-        if (!stmt) continue;
-        if (DML_TYPES.has(stmt.type)) return true;
-        if (CONTROL_FLOW_TYPES.has(stmt.type)) return true;
-        if (stmt.type === 'ApexExpressionStatement' && stmt.expression) {
-            if (SOQL_TYPES.has(stmt.expression.type)) return true;
+        if (!stmt) {
+            continue;
         }
-        if (stmt.type === 'ApexLocalVariableDeclaration') return true;
+        if (DML_TYPES.has(stmt.type)) {
+            return true;
+        }
+        if (CONTROL_FLOW_TYPES.has(stmt.type)) {
+            return true;
+        }
+        if (
+            stmt.type === 'ApexExpressionStatement' &&
+            stmt.expression &&
+            SOQL_TYPES.has(stmt.expression.type)
+        ) {
+            return true;
+        }
+        if (stmt.type === 'ApexLocalVariableDeclaration') {
+            return true;
+        }
     }
     return false;
 }
@@ -46,7 +57,8 @@ export default {
     meta: {
         type: 'suggestion',
         docs: {
-            description: 'Avoid placing business logic directly in triggers — delegate to handler classes',
+            description:
+                'Avoid placing business logic directly in triggers — delegate to handler classes',
             recommended: true,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_bestpractices.html#avoidlogicintrigger',
         },

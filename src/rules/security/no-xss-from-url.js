@@ -32,7 +32,7 @@ export default {
         },
         messages: {
             xssFromUrl:
-                "URL parameter value accessed without sanitization. Wrap with HTMLENCODE(), JSENCODE(), or String.escapeSingleQuotes() before using in output.",
+                'URL parameter value accessed without sanitization. Wrap with HTMLENCODE(), JSENCODE(), or String.escapeSingleQuotes() before using in output.',
         },
         schema: [],
     },
@@ -41,7 +41,9 @@ export default {
         return {
             ApexMethodCallExpression(node) {
                 const callee = (node.rawCallee || '').toLowerCase();
-                if (!URL_PARAM_PATTERNS.some((p) => p.test(callee))) return;
+                if (!URL_PARAM_PATTERNS.some((p) => p.test(callee))) {
+                    return;
+                }
 
                 // Check if the result is immediately wrapped in a safe encoder
                 // by looking at the parent node context (not available directly — use heuristic)

@@ -10,11 +10,13 @@
 const DANGEROUS_PATTERNS = [
     {
         pattern: /^database\.isssandbox$/i,
-        message: "Database.isSandbox() is sometimes misused to gate destructive operations. Use Custom Settings for environment-specific behavior.",
+        message:
+            'Database.isSandbox() is sometimes misused to gate destructive operations. Use Custom Settings for environment-specific behavior.',
     },
     {
         pattern: /^system\.abort$/i,
-        message: "System.abort() terminates a scheduled job. Ensure this is intentional and guarded.",
+        message:
+            'System.abort() terminates a scheduled job. Ensure this is intentional and guarded.',
     },
     {
         pattern: /^test\.starttest$/i,
@@ -42,7 +44,9 @@ export default {
             ApexMethodCallExpression(node) {
                 const callee = node.rawCallee || '';
                 for (const { pattern, message, skipInTest } of DANGEROUS_PATTERNS) {
-                    if (skipInTest) continue;
+                    if (skipInTest) {
+                        continue;
+                    }
                     if (message && pattern.test(callee)) {
                         context.report({
                             node,

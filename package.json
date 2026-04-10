@@ -1,18 +1,14 @@
 {
     "name": "eslint-plugin-apex",
     "version": "0.1.0",
-    "description": "ESLint plugin for Salesforce Apex — ports PMD Apex rules to the ESLint ecosystem",
+    "description": "ESLint plugin for Salesforce Apex â€” ports PMD Apex rules to the ESLint ecosystem",
     "type": "module",
     "main": "src/index.js",
     "exports": {
         ".": "./src/index.js",
         "./parser": "./src/apex-parser.js"
     },
-    "files": [
-        "src",
-        "docs",
-        "LICENSE"
-    ],
+    "files": ["src", "docs", "LICENSE"],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/JoernBerkefeld/eslint-plugin-apex.git"
@@ -40,10 +36,21 @@
         "eslint": ">=9.0.0"
     },
     "devDependencies": {
-        "eslint": "^10.2.0"
+        "@eslint/js": "^10.0.1",
+        "eslint": "^10.2.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-jsdoc": "^62.0.0",
+        "eslint-plugin-prettier": "^5.5.0",
+        "eslint-plugin-unicorn": "^64.0.0",
+        "globals": "^17.4.0",
+        "prettier": "^3.8.1"
     },
     "scripts": {
-        "test": "node --test tests/rules.test.js tests/parser.test.js"
+        "test": "node --test tests/rules.test.js tests/parser.test.js",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix .",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
     },
     "engines": {
         "node": ">=18.0.0"

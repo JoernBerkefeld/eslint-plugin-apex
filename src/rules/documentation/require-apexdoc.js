@@ -22,7 +22,9 @@ function hasApexDocBefore(node, sourceCode) {
     // Look back up to 500 chars for /** ... */ comment
     const lookback = src.slice(Math.max(0, start - 500), start);
     const lastComment = lookback.lastIndexOf('/**');
-    if (lastComment === -1) return false;
+    if (lastComment === -1) {
+        return false;
+    }
     const afterComment = lookback.slice(lastComment);
     return afterComment.includes('*/');
 }
@@ -31,7 +33,8 @@ export default {
     meta: {
         type: 'suggestion',
         docs: {
-            description: 'Require ApexDoc comments on public and global classes, methods, and properties',
+            description:
+                'Require ApexDoc comments on public and global classes, methods, and properties',
             recommended: false,
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_documentation.html#apexdoc',
         },
@@ -58,8 +61,8 @@ export default {
         const reportProperty = opts.reportProperty !== false;
 
         function checkDoc(node, kind, name, modifiers) {
-            if (!isPublicOrGlobal(modifiers)) {
-                if (!reportPrivate) return;
+            if (!isPublicOrGlobal(modifiers) && !reportPrivate) {
+                return;
             }
             if (!hasApexDocBefore(node, context.sourceCode)) {
                 context.report({ node, messageId: 'missingDoc', data: { kind, name } });
@@ -74,7 +77,9 @@ export default {
                 checkDoc(node, 'Method', node.id.name, node.modifiers);
             },
             ApexPropertyDeclaration(node) {
-                if (reportProperty) checkDoc(node, 'Property', node.id.name, node.modifiers);
+                if (reportProperty) {
+                    checkDoc(node, 'Property', node.id.name, node.modifiers);
+                }
             },
         };
     },

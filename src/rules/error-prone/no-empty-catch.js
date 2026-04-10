@@ -16,8 +16,7 @@ export default {
             url: 'https://docs.pmd-code.org/latest/pmd_rules_apex_errorprone.html#emptycatchblock',
         },
         messages: {
-            emptyCatch:
-                "Catch block for '{{type}}' is empty. Handle or log the exception.",
+            emptyCatch: "Catch block for '{{type}}' is empty. Handle or log the exception.",
         },
         schema: [
             {
@@ -40,17 +39,23 @@ export default {
             ApexCatchClause(node) {
                 // Check if catch block is empty
                 const blockStmts = node.block ? node.block.body || [] : [];
-                if (blockStmts.length > 0) return;
+                if (blockStmts.length > 0) {
+                    return;
+                }
 
                 // Check exception name allowlist
                 const paramName = (node.param || '').toLowerCase();
-                if (nameRegex.test(paramName)) return;
+                if (nameRegex.test(paramName)) {
+                    return;
+                }
 
                 // Check for commented blocks (heuristic: look at source range for /* or //)
                 if (allowCommented && node.block && node.range) {
                     const src = context.sourceCode.getText();
                     const blockSrc = src.slice(node.block.range[0], node.block.range[1]);
-                    if (blockSrc.includes('//') || blockSrc.includes('/*')) return;
+                    if (blockSrc.includes('//') || blockSrc.includes('/*')) {
+                        return;
+                    }
                 }
 
                 context.report({

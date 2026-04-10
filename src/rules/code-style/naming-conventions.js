@@ -17,9 +17,15 @@ const PATTERNS = {
 };
 
 function matchesPattern(name, pattern) {
-    if (pattern === 'PascalCase') return PATTERNS.pascalCase.test(name);
-    if (pattern === 'camelCase') return PATTERNS.camelCase.test(name);
-    if (pattern === 'UPPER_SNAKE_CASE') return PATTERNS.upperSnakeCase.test(name);
+    if (pattern === 'PascalCase') {
+        return PATTERNS.pascalCase.test(name);
+    }
+    if (pattern === 'camelCase') {
+        return PATTERNS.camelCase.test(name);
+    }
+    if (pattern === 'UPPER_SNAKE_CASE') {
+        return PATTERNS.upperSnakeCase.test(name);
+    }
     // treat as a raw regex string
     try {
         return new RegExp(pattern).test(name);
@@ -29,8 +35,11 @@ function matchesPattern(name, pattern) {
 }
 
 function isConstant(modifiers) {
-    return modifiers && modifiers.some((m) => m.value === 'static') &&
-           modifiers.some((m) => m.value === 'final');
+    return (
+        modifiers &&
+        modifiers.some((m) => m.value === 'static') &&
+        modifiers.some((m) => m.value === 'final')
+    );
 }
 
 function isStatic(modifiers) {
@@ -38,8 +47,9 @@ function isStatic(modifiers) {
 }
 
 function isTestClass(modifiers) {
-    return modifiers && modifiers.some(
-        (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
+    return (
+        modifiers &&
+        modifiers.some((m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest')
     );
 }
 
@@ -117,18 +127,22 @@ export default {
             },
             ApexMethodDeclaration(node) {
                 // Skip test methods — they often use descriptive names
-                const isTest = node.modifiers && node.modifiers.some(
-                    (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest'
-                );
-                if (isTest) return;
+                const isTest =
+                    node.modifiers &&
+                    node.modifiers.some(
+                        (m) => m.type === 'ApexAnnotation' && m.name.toLowerCase() === 'istest',
+                    );
+                if (isTest) {
+                    return;
+                }
                 report(node, node.id.name, 'method', cfg.methodPattern);
             },
             ApexFieldDeclaration(node) {
                 const pattern = isConstant(node.modifiers)
                     ? cfg.constantPattern
                     : isStatic(node.modifiers)
-                    ? cfg.staticFieldPattern
-                    : cfg.fieldPattern;
+                      ? cfg.staticFieldPattern
+                      : cfg.fieldPattern;
                 for (const d of node.declarators || []) {
                     report(d, d.id.name, 'field', pattern);
                 }

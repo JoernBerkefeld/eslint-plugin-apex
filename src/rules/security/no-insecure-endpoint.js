@@ -25,9 +25,14 @@ export default {
         return {
             ApexLiteralExpression(node) {
                 const raw = node.raw || node.value || '';
-                if (!raw.startsWith("'") && !raw.startsWith('"')) return;
+                if (!raw.startsWith("'") && !raw.startsWith('"')) {
+                    return;
+                }
                 const value = raw.slice(1, -1);
-                if (value.toLowerCase().startsWith('http://') && !value.toLowerCase().startsWith('https://')) {
+                if (
+                    value.toLowerCase().startsWith('http://') &&
+                    !value.toLowerCase().startsWith('https://')
+                ) {
                     context.report({
                         node,
                         messageId: 'insecureEndpoint',

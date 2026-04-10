@@ -24,9 +24,11 @@ export default {
     create(context) {
         return {
             ApexMethodDeclaration(node) {
-                if (!node.modifiers) return;
+                if (!node.modifiers) {
+                    return;
+                }
                 const hasTestMethod = node.modifiers.some(
-                    (m) => m.type === 'ApexModifierNode' && m.value === 'testmethod'
+                    (m) => m.type === 'ApexModifierNode' && m.value === 'testmethod',
                 );
                 if (hasTestMethod) {
                     context.report({
