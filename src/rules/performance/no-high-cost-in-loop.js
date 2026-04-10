@@ -1,10 +1,12 @@
 /**
  * Rule: perf/no-high-cost-in-loop
- * PMD equivalent: AvoidHighCostInLoopWithoutBulkification
+ * PMD equivalent: OperationWithHighCostInLoop
  *
  * Identifies additional high-cost Apex patterns that should be avoided inside
  * loops. This complements no-dml-in-loop by focusing on non-DML patterns like
  * System.enqueueJob(), Messaging.sendEmail(), and EventBus.publish().
+ *
+ * Older PMD catalogs used AvoidSoqlInLoops / AvoidHighCostInLoopWithoutBulkification naming.
  */
 
 const HIGH_COST_PATTERNS = [

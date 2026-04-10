@@ -1288,28 +1288,39 @@ export default [
                 debugsshoulduselogginglevel: 'best-debug-use-logging-level',
                 avoidfutureannotation: 'best-no-future-annotation',
                 queueableshouldattachfinalizer: 'best-queueable-needs-finalizer',
+                queueablewithoutfinalizer: 'best-queueable-needs-finalizer',
                 unusedlocalvariable: 'best-no-unused-local-variable',
                 apexassertionsshouldincludemessage: 'best-test-assertions-have-message',
                 // code-style
                 fieldnamingconventions: 'style-naming-conventions',
                 methodnamingconventions: 'style-naming-conventions',
                 classnamingconventions: 'style-naming-conventions',
+                localvariablenamingconventions: 'style-naming-conventions',
+                formalparameternamingconventions: 'style-naming-conventions',
+                propertynamingconventions: 'style-naming-conventions',
                 ifstmtsmustusebraces: 'style-braces-for-if',
+                ifelsestmtsmustusebraces: 'style-braces-for-if',
                 forloopsmustusebraces: 'style-braces-for-for',
                 whileloopsmustusebraces: 'style-braces-for-while',
                 fielddeclarationsshouldbeatstart: 'style-fields-at-start',
                 onedeclarationperline: 'style-one-declaration-per-line',
                 annotationnamingconventions: 'style-annotation-naming',
+                annotationsnamingconventions: 'style-annotation-naming',
                 // design
                 cyclomaticcomplexity: 'design-cyclomatic-complexity',
+                stdcyclomaticcomplexity: 'design-cyclomatic-complexity',
                 cognitivecomplexity: 'design-cognitive-complexity',
                 toodeepcnesting: 'design-no-deep-nesting',
                 toodeepnesting: 'design-no-deep-nesting',
+                avoiddeeplynestedifstmts: 'design-no-deep-nesting',
                 excessiveparameterlist: 'design-excessive-parameters',
                 excessivepubliccount: 'design-excessive-public-count',
                 toomanyfields: 'design-too-many-fields',
                 avoidbooleanparameters: 'design-no-boolean-parameters',
+                avoidbooleanmethodparameters: 'design-no-boolean-parameters',
                 ncssmethodcount: 'design-ncss-method-count',
+                ncsscount: 'design-ncss-method-count',
+                ncsstypecount: 'design-ncss-method-count',
                 unusedmethod: 'design-no-unused-method',
                 // documentation
                 apexdoc: 'doc-require-apexdoc',
@@ -1320,21 +1331,32 @@ export default [
                 emptytryorfinallyblock: 'error-no-empty-try',
                 apexcsrf: 'error-no-csrf-in-constructor',
                 avoidhardcodedid: 'error-no-hardcoded-id',
+                avoidhardcodingid: 'error-no-hardcoded-id',
                 nodirecttriggermapaccess: 'error-no-direct-trigger-map-access',
+                avoiddirectaccesstriggermap: 'error-no-direct-trigger-map-access',
                 nonexistentcustomsettingormetadata: 'error-no-nonexistent-annotation',
+                avoidnonexistentannotations: 'error-no-nonexistent-annotation',
                 avoidstatefuldbresultinbatch: 'error-no-stateful-db-result',
-                auraenabledwithoutcatchblock: 'error-aura-enabled-getter-public',
+                avoidstatefuldatabaseresult: 'error-no-stateful-db-result',
+                inaccessibleauraenabledgetter: 'error-aura-enabled-getter-public',
                 methodwithsamenameasenclosingclass: 'error-no-method-name-as-class',
                 overridebothequalsandhashcode: 'error-override-both-equals-hashcode',
                 testmethodsmustsbeintestclasses: 'error-test-methods-in-test-class',
                 testmethodsmustsbeintestclass: 'error-test-methods-in-test-class',
+                testmethodsmustbeintestclasses: 'error-test-methods-in-test-class',
                 avoidshadowingfield: 'error-no-type-shadow-namespace',
+                typeshadowsbuiltinnamespace: 'error-no-type-shadow-namespace',
                 // performance
                 avoiddmlstatementsinloops: 'perf-no-dml-in-loop',
+                operationwithlimitsinloop: 'perf-no-dml-in-loop',
                 avoiddebugstatements: 'perf-no-debug-statements',
                 wherelesssoqlquery: 'perf-no-non-restrictive-query',
+                avoidnonrestrictivequeries: 'perf-no-non-restrictive-query',
                 avoidsoqlinloops: 'perf-no-high-cost-in-loop',
+                operationwithhighcostinloop: 'perf-no-high-cost-in-loop',
+                avoidhighcostinloopwithoutbulkification: 'perf-no-high-cost-in-loop',
                 avoidlazydescribesetting: 'perf-no-eager-describe',
+                avoideagerdescribes: 'perf-no-eager-describe',
                 // security
                 apexbadcrypto: 'security-no-hardcoded-crypto',
                 apexcrudviolation: 'security-crud-violation',
@@ -1344,12 +1366,23 @@ export default [
                 apexsharingviolations: 'security-sharing-violations',
                 apexsoqlinjection: 'security-no-soql-injection',
                 apexsuggestusingnamedcredential: 'security-use-named-credentials',
+                apexsuggestusingnamedcred: 'security-use-named-credentials',
                 apexsuggestusingnamedcredentials: 'security-use-named-credentials',
                 apexxssfromescapefalse: 'security-no-xss-false-escape',
                 apexssfromescapefalse: 'security-no-xss-false-escape',
+                apexxssfromurlparam: 'security-no-xss-from-url',
+                apexxssfromurlparameter: 'security-no-xss-from-url',
                 apexssfromurlparam: 'security-no-xss-from-url',
                 apexssfromurlparameter: 'security-no-xss-from-url',
             };
+
+            /** PMD names (normalized) from the offline mirror that have no apex/* rule yet */
+            const PMD_UNMAPPED_OPTIONAL = new Set([
+                'excessiveclasslength',
+                'emptystatementblock',
+                'eagerlyloadeddescribesobjectresult',
+                'ncssconstructorcount',
+            ]);
 
             function parsePMDXML(xml) {
                 // Normalise into DOM
@@ -1413,6 +1446,14 @@ export default [
                         const severity = priority2severity(priority);
 
                         outLines.push(`  // PMD: ${pmdName}${since ? ` (since ${since})` : ''}`);
+                        if (
+                            eslintId.startsWith('custom-') &&
+                            PMD_UNMAPPED_OPTIONAL.has(lowerName)
+                        ) {
+                            outLines.push(
+                                `  // Known gap: no eslint-plugin-apex rule yet — see README (PMD rules without an ESLint twin).`,
+                            );
+                        }
                         outLines.push(`  'apex/${eslintId}': '${severity}',`);
 
                         // Build skeleton

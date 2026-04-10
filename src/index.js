@@ -1,7 +1,7 @@
 /**
  * eslint-plugin-apex
  *
- * ESLint plugin for Salesforce Apex — ports 65 active PMD Apex rules to the
+ * ESLint plugin for Salesforce Apex — ports 57 ESLint rules aligned with the
  * ESLint ecosystem using @apexdevtools/apex-parser as the language parser.
  *
  * Usage (eslint.config.js flat config):
@@ -219,7 +219,7 @@ function buildRules(profile) {
 const plugin = {
     meta: {
         name: 'eslint-plugin-apex',
-        version: '0.1.0',
+        version: '0.1.1',
     },
     rules,
     // Flat-config-compatible configs

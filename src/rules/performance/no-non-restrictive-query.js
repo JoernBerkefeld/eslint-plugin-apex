@@ -1,9 +1,11 @@
 /**
  * Rule: perf/no-non-restrictive-query
- * PMD equivalent: ApexSOQLInjection (performance aspect) / WherelessSOQLQuery
+ * PMD equivalent: AvoidNonRestrictiveQueries
  *
  * SOQL queries without a WHERE clause return all records of a type, which
  * can easily breach governor limits in large orgs. Always add a WHERE clause.
+ *
+ * Legacy PMD name: WherelessSOQLQuery.
  */
 
 export default {
